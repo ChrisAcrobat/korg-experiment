@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dice Roll · Korg experiments</title>
+  <meta name="description" content="Build and roll custom dice formulas with optional 3D physics." />
+  <link rel="stylesheet" href="dice-roll.css" />
+</head>
+<body data-i18n-title="dice_document_title" data-i18n-meta="dice_meta_description">
+  <div class="wrap" id="wrap">
+    <div class="top">
+      <a class="back" id="back" href="../../" data-i18n="dice_back">← Back home</a>
+      <div class="heading-with-korg">
+        <span class="header-basket" role="img" data-i18n="basket_aria" data-i18n-attr="aria-label">🧺</span>
+        <h1 data-i18n="dice_heading">Dice Roll · Korg experiments</h1>
+      </div>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="sv">SV</button>
+      </div>
+    </div>
+
+    <section class="panel" aria-labelledby="builder-title">
+      <h2 class="panel-title" id="builder-title" data-i18n="dice_builder_title">Formula builder</h2>
+      <div class="toolbar">
+        <button type="button" class="btn btn-accent" id="add-bracket" data-i18n="dice_add_bracket">Add bracket</button>
+        <button type="button" class="btn" id="tpl-dnd" data-i18n="dice_tpl_dnd">D&amp;D attack</button>
+        <button type="button" class="btn" id="tpl-dnd-dmg" data-i18n="dice_tpl_dnd_dmg">D&amp;D damage</button>
+        <button type="button" class="btn" id="tpl-dh" data-i18n="dice_tpl_dh">Daggerheart</button>
+        <button type="button" class="btn" id="tpl-2d6" data-i18n="dice_tpl_2d6">2D6</button>
+        <button type="button" class="btn" id="share-btn" data-i18n="dice_share">Share formula</button>
+        <span id="share-status" class="hint" hidden></span>
+      </div>
+      <div class="formula-preview" id="formula-preview" aria-live="polite"></div>
+      <div class="brackets" id="brackets"></div>
+      <p class="hint" data-i18n="dice_math_hint">Math: bracket results combine left-to-right with +, −, ×, ÷ (no further precedence).</p>
+    </section>
+
+    <section class="panel" aria-labelledby="roll-title">
+      <h2 class="panel-title" id="roll-title" data-i18n="dice_roll_title">Roll</h2>
+      <div class="toolbar">
+        <button type="button" class="btn btn-primary" id="roll-btn" data-i18n="dice_roll">Roll</button>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-3d" />
+          <span data-i18n="dice_toggle_3d">3D</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-sound" />
+          <span data-i18n="dice_toggle_sound">Sound</span>
+        </label>
+        <label class="color-wrap">
+          <span data-i18n="dice_color">Dice color</span>
+          <input type="color" id="dice-color" value="#a78bfa" />
+        </label>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="dice-canvas" data-i18n="dice_canvas_label" data-i18n-attr="aria-label"></canvas>
+      </div>
+      <div class="results" style="margin-top:0.85rem">
+        <div class="total" id="total" aria-live="polite">—</div>
+        <div class="compare" id="compare" hidden></div>
+        <div class="die-results" id="die-results"></div>
+        <div id="bracket-results"></div>
+      </div>
+      <p class="hint" data-i18n="dice_space_hint">Press Space to roll. Nat 1 and max face are highlighted. Up to 12 dice animate in 3D.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="history-title">
+      <h2 class="panel-title" id="history-title" data-i18n="dice_history_title">History</h2>
+      <div class="toolbar">
+        <button type="button" class="btn" id="clear-history" data-i18n="dice_clear_history">Clear history</button>
+      </div>
+      <ul class="history" id="history-list"></ul>
+    </section>
+  </div>
+
+  <span class="corner-basket" aria-hidden="true">🧺</span>
+  <div id="confetti" aria-hidden="true"></div>
+
+  <script src="../../reload.js" defer></script>
+  <script src="../../js/animations.js" defer></script>
+  <script src="../../js/i18n.js" defer></script>
+  <script type="module" src="dice-app.js"></script>
+</body>
+</html>

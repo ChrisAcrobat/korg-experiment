@@ -17,6 +17,10 @@ const PRECACHE = [
   "./Korgs/Pong/",
   "./Korgs/Pong/index.html",
   "./Korgs/Pong/meta.json",
+  "./Korgs/DiceRoll/",
+  "./Korgs/DiceRoll/index.html",
+  "./Korgs/DiceRoll/meta.json",
+  "./Korgs/DiceRoll/dice-roll.css",
   "./404.html",
 ];
 
