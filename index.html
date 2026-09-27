@@ -129,7 +129,7 @@
       text-transform: uppercase;
       color: var(--accent);
       font-weight: 600;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.4rem;
     }
     h1 {
       margin: 0 0 1rem;
@@ -143,66 +143,77 @@
       line-height: 1.65;
       font-size: 1.05rem;
     }
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0;
-      margin-bottom: 1.25rem;
-    }
-    .basket {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.35rem;
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-      user-select: none;
-      margin: 0 0 0.25rem;
-      padding: 0.65rem 0.9rem 0.55rem;
-      border-radius: 1rem;
-      border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
-      filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 25%, transparent));
-      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-      flex-shrink: 0;
-    }
-    .basket-emoji {
-      font-size: clamp(2.75rem, 12vw, 3.75rem);
-      line-height: 1;
-      display: block;
-    }
-    .basket-cta {
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+    .hero { margin-bottom: 1.25rem; }
+    .hero-text h1 { margin-bottom: 0; }
+    .hoops-section { margin-top: 1.5rem; }
+    .hoops-heading {
+      margin: 0 0 0.75rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--accent);
-      line-height: 1.2;
+      font-weight: 600;
     }
-    .basket:hover {
-      transform: scale(1.04);
-      background: color-mix(in srgb, var(--accent) 20%, transparent);
-      border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    .hoops-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
     }
-    .basket:focus-visible {
+    .hoop-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .hoop {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: inherit;
+      padding: 0.85rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+      background: color-mix(in srgb, var(--fg) 3%, transparent);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+      animation: hoop-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    }
+    .hoop:hover {
+      border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      transform: translateY(-1px) scale(1.01);
+    }
+    .hoop:focus-visible {
       outline: 2px solid var(--accent);
-      outline-offset: 4px;
+      outline-offset: 3px;
     }
-    @media (min-width: 520px) {
-      .hero {
-        flex-direction: row;
-        align-items: center;
-        gap: 1rem;
-      }
-      .hero-text { flex: 1; min-width: 0; }
-      .basket { order: -1; }
-      .basket-emoji { font-size: 3.5rem; }
+    .hoop-icon {
+      font-size: 1.85rem;
+      line-height: 1;
+      flex-shrink: 0;
+      filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--accent) 30%, transparent));
     }
-    .hero-text h1 { margin-bottom: 0; }
-    .hero-text .eyebrow { margin-bottom: 0.4rem; }
+    .hoop-text { min-width: 0; flex: 1; }
+    .hoop-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .hoop-desc {
+      margin: 0.3rem 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    @keyframes hoop-pop {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
     footer {
       margin-top: 1.75rem;
       padding-top: 1.25rem;
@@ -221,13 +232,10 @@
       inset: 0;
       z-index: 1000;
       pointer-events: none;
-      display: grid;
-      place-items: center;
-      background: transparent;
     }
-    .expand-overlay .fly-basket {
+    .expand-overlay .fly-hoop {
       position: fixed;
-      font-size: 4.5rem;
+      font-size: 2.5rem;
       line-height: 1;
       margin: 0;
       transform-origin: center center;
@@ -235,13 +243,18 @@
       filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 35%, transparent));
       transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
     }
-    .expand-overlay.is-on .fly-basket {
-      transform: translate(-50%, -50%) scale(18);
+    .expand-overlay.is-on .fly-hoop {
+      transform: translate(-50%, -50%) scale(22);
       filter: drop-shadow(0 0 40px color-mix(in srgb, var(--accent) 55%, transparent));
     }
     @media (prefers-reduced-motion: reduce) {
-      .expand-overlay .fly-basket { transition: none; }
-      .basket:hover { transform: none; }
+      .hoop {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+      .hoop:hover { transform: none; }
+      .expand-overlay .fly-hoop { transition: none; }
       body.is-leaving main { transition: none; }
     }
   </style>
@@ -255,10 +268,6 @@
       </div>
     </div>
     <div class="hero">
-      <a class="basket" id="basket-link" href="pong.html" data-i18n="basket_label" data-i18n-attr="aria-label" data-i18n-title-attr="basket_title">
-        <span class="basket-emoji" aria-hidden="true">🧺</span>
-        <span class="basket-cta" data-i18n="basket_cta">Play Pong</span>
-      </a>
       <div class="hero-text">
         <span class="eyebrow" data-i18n="eyebrow">AI experiment</span>
         <h1 data-i18n="header_title">Korg experiments</h1>
@@ -272,6 +281,13 @@
       The page is intentionally simple: a place to try workflows, publishing, and
       collaboration between human and assistant.
     </p>
+
+    <section class="hoops-section" aria-labelledby="hoops-heading">
+      <h2 id="hoops-heading" class="hoops-heading" data-i18n="hoops_heading">Hoops</h2>
+      <p id="hoops-status" class="hoops-status" data-i18n="hoops_loading">Loading hoops…</p>
+      <ul id="hoop-list" class="hoop-list" hidden></ul>
+    </section>
+
     <footer>
       <span data-i18n="footer_published_prefix">Published from the GitHub repository </span><a href="https://github.com/ChrisAcrobat/korg-experiment" data-i18n="footer_published_link">korg-experiment</a>.<br />
       <span data-i18n="footer_updated">Updated: September 27, 2026.</span>
@@ -285,42 +301,198 @@
   <script src="reload.js" defer></script>
   <script src="i18n.js" defer></script>
   <script defer>
-    const basket = document.getElementById("basket-link");
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (function () {
+      const REPO = "ChrisAcrobat/korg-experiment";
+      const BRANCH = "main";
+      const CONTENTS =
+        "https://api.github.com/repos/" + REPO + "/contents/Korgs?ref=" + encodeURIComponent(BRANCH);
+      const listEl = document.getElementById("hoop-list");
+      const statusEl = document.getElementById("hoops-status");
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    basket.addEventListener("click", (event) => {
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault();
-      if (reduceMotion) {
-        window.location.href = basket.href;
-        return;
+      function t(key, fallback) {
+        if (window.KorgI18n) return window.KorgI18n.t(key, fallback);
+        return fallback;
       }
 
-      const rect = basket.getBoundingClientRect();
-      const overlay = document.createElement("div");
-      overlay.className = "expand-overlay";
-      overlay.setAttribute("aria-hidden", "true");
-      const fly = document.createElement("span");
-      fly.className = "fly-basket";
-      fly.textContent = "🧺";
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      fly.style.left = cx + "px";
-      fly.style.top = cy + "px";
-      fly.style.transform = "translate(-50%, -50%) scale(1)";
-      overlay.appendChild(fly);
-      document.body.appendChild(overlay);
-      document.body.classList.add("is-leaving");
-      basket.style.visibility = "hidden";
+      function setStatus(key, fallback) {
+        statusEl.hidden = false;
+        statusEl.setAttribute("data-i18n", key);
+        statusEl.textContent = t(key, fallback);
+        listEl.hidden = true;
+        listEl.innerHTML = "";
+      }
 
-      requestAnimationFrame(() => {
-        overlay.classList.add("is-on");
+      async function fetchJson(url) {
+        const res = await fetch(url, {
+          headers: { Accept: "application/vnd.github+json" },
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      }
+
+      async function loadMeta(folder) {
+        const url =
+          "https://api.github.com/repos/" +
+          REPO +
+          "/contents/Korgs/" +
+          encodeURIComponent(folder) +
+          "/meta.json?ref=" +
+          encodeURIComponent(BRANCH);
+        try {
+          const data = await fetchJson(url);
+          if (data && data.content && data.encoding === "base64") {
+            const json = JSON.parse(atob(data.content.replace(/\n/g, "")));
+            return json;
+          }
+          if (data && data.download_url) {
+            const res = await fetch(data.download_url, { cache: "no-store" });
+            if (!res.ok) throw new Error("meta " + res.status);
+            return res.json();
+          }
+        } catch (_) { /* fall through */ }
+        return null;
+      }
+
+      function navigateWithZoom(anchor, icon) {
+        const href = anchor.getAttribute("href");
+        if (reduceMotion) {
+          window.location.href = href;
+          return;
+        }
+        const rect = anchor.querySelector(".hoop-icon").getBoundingClientRect();
+        const overlay = document.createElement("div");
+        overlay.className = "expand-overlay";
+        overlay.setAttribute("aria-hidden", "true");
+        const fly = document.createElement("span");
+        fly.className = "fly-hoop";
+        fly.textContent = icon || "🧺";
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        fly.style.left = cx + "px";
+        fly.style.top = cy + "px";
+        fly.style.transform = "translate(-50%, -50%) scale(1)";
+        overlay.appendChild(fly);
+        document.body.appendChild(overlay);
+        document.body.classList.add("is-leaving");
+
+        requestAnimationFrame(() => {
+          overlay.classList.add("is-on");
+        });
+
+        const done = () => { window.location.href = href; };
+        fly.addEventListener("transitionend", done, { once: true });
+        setTimeout(done, 850);
+      }
+
+      function renderHoops(hoops) {
+        listEl.innerHTML = "";
+        if (!hoops.length) {
+          setStatus("hoops_empty", "No hoops yet. Add a folder under Korgs/.");
+          return;
+        }
+        statusEl.hidden = true;
+        listEl.hidden = false;
+        const defaultIcon = t("default_hoop_icon", "🧺");
+        const openLabel = t("hoop_open", "Open hoop");
+
+        hoops.forEach((hoop, index) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.className = "hoop";
+          a.href = "Korgs/" + encodeURIComponent(hoop.folder) + "/";
+          a.style.animationDelay = (index * 0.08) + "s";
+          a.setAttribute(
+            "aria-label",
+            openLabel + ": " + hoop.title
+          );
+
+          const icon = document.createElement("span");
+          icon.className = "hoop-icon";
+          icon.setAttribute("aria-hidden", "true");
+          icon.textContent = hoop.icon || defaultIcon;
+
+          const text = document.createElement("div");
+          text.className = "hoop-text";
+          const title = document.createElement("p");
+          title.className = "hoop-title";
+          title.textContent = hoop.title;
+          text.appendChild(title);
+          if (hoop.description) {
+            const desc = document.createElement("p");
+            desc.className = "hoop-desc";
+            desc.textContent = hoop.description;
+            text.appendChild(desc);
+          }
+
+          a.appendChild(icon);
+          a.appendChild(text);
+          a.addEventListener("click", (event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            navigateWithZoom(a, hoop.icon || defaultIcon);
+          });
+
+          li.appendChild(a);
+          listEl.appendChild(li);
+        });
+      }
+
+      async function loadHoops() {
+        setStatus("hoops_loading", "Loading hoops…");
+        try {
+          const entries = await fetchJson(CONTENTS);
+          if (!Array.isArray(entries)) throw new Error("bad listing");
+          const dirs = entries.filter(
+            (e) => e && e.type === "dir" && e.name && !e.name.startsWith(".")
+          );
+          const hoops = await Promise.all(
+            dirs.map(async (dir) => {
+              const meta = await loadMeta(dir.name);
+              const order =
+                meta && typeof meta.order === "number" ? meta.order : Number.POSITIVE_INFINITY;
+              return {
+                folder: dir.name,
+                title: (meta && meta.title) || dir.name,
+                description: (meta && meta.description) || "",
+                icon: (meta && meta.icon) || "",
+                order: order,
+              };
+            })
+          );
+          hoops.sort((a, b) => {
+            if (a.order !== b.order) return a.order - b.order;
+            return a.title.localeCompare(b.title);
+          });
+          renderHoops(hoops);
+        } catch (_) {
+          setStatus("hoops_error", "Could not load hoops right now. Try again later.");
+        }
+      }
+
+      const start = () => loadHoops();
+      if (window.KorgI18n && window.KorgI18n.ready) {
+        window.KorgI18n.ready.then(start).catch(start);
+      } else {
+        document.addEventListener("i18n:ready", start, { once: true });
+        setTimeout(start, 400);
+      }
+
+      document.addEventListener("i18n:ready", () => {
+        if (!listEl.hidden && listEl.children.length) {
+          // Refresh aria labels / status text if language changes after load
+          const openLabel = t("hoop_open", "Open hoop");
+          listEl.querySelectorAll(".hoop").forEach((a) => {
+            const title = a.querySelector(".hoop-title");
+            if (title) a.setAttribute("aria-label", openLabel + ": " + title.textContent);
+          });
+        } else if (!statusEl.hidden) {
+          const key = statusEl.getAttribute("data-i18n");
+          if (key) statusEl.textContent = t(key, statusEl.textContent);
+        }
       });
-
-      const done = () => { window.location.href = basket.href; };
-      fly.addEventListener("transitionend", done, { once: true });
-      setTimeout(done, 850);
-    });
+    })();
   </script>
 </body>
 </html>
