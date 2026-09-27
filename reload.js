@@ -1,6 +1,6 @@
 /**
  * Thin bootstrap: register the Service Worker and watch for critical updates
- * to index.html / reload.js. Everything else updates silently via SW / modules.
+ * to index.html / reload.js only. sw.js updates take over silently.
  */
 (function () {
   const scriptEl = document.currentScript;
@@ -22,12 +22,58 @@
     },
   };
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register(new URL("sw.js", siteRoot).href).catch(function () {});
-  }
-
   function t(key, fallback) {
     return window.KorgI18n ? window.KorgI18n.t(key, fallback) : fallback;
+  }
+
+  /** Ask a waiting worker to activate immediately — never show the update popup. */
+  function activateWaitingWorker(worker) {
+    if (!worker) return;
+    try {
+      worker.postMessage({ type: "SKIP_WAITING" });
+    } catch (_) {}
+  }
+
+  function wireSilentServiceWorker(reg) {
+    if (!reg) return;
+
+    // A new SW may already be waiting (e.g. after a prior sw.js-only deploy).
+    if (reg.waiting) activateWaitingWorker(reg.waiting);
+
+    reg.addEventListener("updatefound", function () {
+      const installing = reg.installing;
+      if (!installing) return;
+      installing.addEventListener("statechange", function () {
+        // "installed" + no controller yet = first install; with a controller = update waiting.
+        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          activateWaitingWorker(reg.waiting || installing);
+        }
+      });
+    });
+
+    // Periodic update checks so sw.js changes are noticed without a full navigation.
+    setInterval(function () {
+      reg.update().catch(function () {});
+    }, INTERVAL_MS);
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") {
+        reg.update().catch(function () {});
+      }
+    });
+  }
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register(new URL("sw.js", siteRoot).href)
+      .then(wireSilentServiceWorker)
+      .catch(function () {});
+
+    // New SW claimed the page — stay put; do NOT reload and do NOT show the banner.
+    // (Critical index.html / reload.js changes still use the fingerprint popup below.)
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      /* silent takeover */
+    });
   }
 
   async function fingerprint(path) {
@@ -45,6 +91,7 @@
     return path + "|h:" + hash;
   }
 
+  /** Critical = index.html + reload.js only. sw.js is intentionally excluded. */
   async function criticalFingerprint() {
     const parts = await Promise.all([
       fingerprint("index.html"),

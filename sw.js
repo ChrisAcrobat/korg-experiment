@@ -198,7 +198,13 @@ self.addEventListener("activate", function (event) {
 
 // Also start polling if the worker was already active (e.g. script update mid-session).
 self.addEventListener("message", function (event) {
-  if (event && event.data && event.data.type === "korg-discover-hoops") {
+  const data = event && event.data;
+  if (!data || !data.type) return;
+  if (data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+    return;
+  }
+  if (data.type === "korg-discover-hoops") {
     discoverAndCacheHoops(true);
   }
 });
@@ -213,7 +219,8 @@ self.addEventListener("fetch", function (event) {
   if (url.origin !== self.location.origin) return;
 
   const path = url.pathname;
-  const isCritical =
+  // Network-first shell assets (sw.js updates activate via skipWaiting — not a UI "critical" popup).
+  const isShellNetworkFirst =
     /\/(index\.html)?$/.test(path) ||
     path.endsWith("/reload.js") ||
     path.endsWith("/sw.js");
@@ -236,7 +243,7 @@ self.addEventListener("fetch", function (event) {
           return cached;
         });
 
-      if (isCritical || isHoopMeta) {
+      if (isShellNetworkFirst || isHoopMeta) {
         const net = await networkPromise;
         return net || cached;
       }
