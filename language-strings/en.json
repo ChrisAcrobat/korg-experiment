@@ -8,7 +8,7 @@
   "intro1": "This is an open experiment where an AI assistant gets to build, publish, and iterate on a simple website — without anyone writing the code by hand.",
   "intro2": "The page is intentionally simple: a place to try workflows, publishing, and collaboration between human and assistant.",
   "footer_published_prefix": "Published from the GitHub repository ",
-  "footer_published_link": "korg experiments",
+  "footer_published_link": "korg-experiments",
   "footer_updated": "Updated: September 27, 2026.",
   "lang_group": "Language",
   "pong_document_title": "Pong · Korg experiments",
