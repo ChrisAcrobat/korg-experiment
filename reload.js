@@ -17,7 +17,7 @@
   const scriptEl = document.currentScript;
   const siteRoot = new URL(".", scriptEl.src).href;
   const INTERVAL_MS = 45_000;
-  const FP_KEY = "korg-critical-fp-v3";
+  const FP_KEY = "korg-critical-fp-v4";
   const CONFIRM_MS = 2000;
 
   window.KORG_ROOT = siteRoot;
@@ -116,8 +116,10 @@
    * Called by checkCritical only — no short-circuit that skips the hash.
    */
   async function fingerprint(path) {
-    const url = new URL(path, siteRoot).href;
-    const res = await fetch(url, {
+    // ?korg_fp=1 tells sw.js to bypass Cache API entirely (see sw.js fetch handler).
+    const url = new URL(path, siteRoot);
+    url.searchParams.set("korg_fp", "1");
+    const res = await fetch(url.href, {
       cache: "no-store",
       headers: { Accept: "text/html,application/javascript,text/plain,*/*" },
     });

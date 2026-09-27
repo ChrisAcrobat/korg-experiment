@@ -1,5 +1,5 @@
 /* Korg experiments service worker — shell precache + dynamic hoop discovery. */
-const CACHE_NAME = "korg-cache-v3";
+const CACHE_NAME = "korg-cache-v4";
 const REPO = "ChrisAcrobat/korg-experiment";
 const BRANCH = "main";
 const HOOP_POLL_MS = 25000;
@@ -218,6 +218,12 @@ self.addEventListener("fetch", function (event) {
   // Let GitHub / third-party APIs bypass SW cache logic (network only).
   if (url.origin !== self.location.origin) return;
 
+  // Critical-update probes from reload.js must hit the network directly.
+  // If the SW intercepted them, a failed/mid-deploy fetch could fall back to an
+  // older precached index.html/reload.js and falsely trip the update banner
+  // when only Korgs/ files changed.
+  if (url.searchParams.has("korg_fp")) return;
+
   const path = url.pathname;
   // Network-first shell assets (sw.js updates activate via skipWaiting — not a UI "critical" popup).
   const isShellNetworkFirst =
@@ -245,6 +251,7 @@ self.addEventListener("fetch", function (event) {
 
       if (isShellNetworkFirst || isHoopMeta) {
         const net = await networkPromise;
+        // Prefer network; only use cache if network produced nothing.
         return net || cached;
       }
 
