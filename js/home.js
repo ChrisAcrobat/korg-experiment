@@ -1,6 +1,16 @@
-(function () {
+(function (global) {
+  let started = false;
+
   function t(key, fallback) {
-    return window.KorgI18n ? window.KorgI18n.t(key, fallback) : fallback;
+    return global.KorgI18n ? global.KorgI18n.t(key, fallback) : fallback;
+  }
+
+  function isHome() {
+    if (global.KorgNav && global.KorgNav.isHomeUrl) {
+      return global.KorgNav.isHomeUrl(location.href);
+    }
+    const path = location.pathname.replace(/\/$/, "");
+    return /\/korg-experiment$/i.test(path) || /\/korg-experiment\/index\.html$/i.test(location.pathname);
   }
 
   function buildContent(root) {
@@ -49,26 +59,59 @@
     root.appendChild(intro2);
     root.appendChild(section);
 
-    if (window.KorgI18n && window.KorgI18n.getStrings) {
-      // Re-apply so newly injected nodes pick up current language
-      window.KorgI18n.setLanguage(window.KorgI18n.getLanguage());
+    if (global.KorgI18n && global.KorgI18n.getStrings) {
+      global.KorgI18n.setLanguage(global.KorgI18n.getLanguage());
     }
 
-    if (window.KorgHoops) {
-      window.KorgHoops.mount(list, status);
+    let hoopCleanup = null;
+    if (global.KorgHoops) {
+      hoopCleanup = global.KorgHoops.mount(list, status);
     }
+    return function () {
+      if (typeof hoopCleanup === "function") hoopCleanup();
+      root.innerHTML = "";
+    };
+  }
+
+  function mountHome(root) {
+    if (!root) root = document.getElementById("content");
+    if (!root) return function () {};
+    return buildContent(root);
   }
 
   function start() {
+    if (!isHome()) return;
+    if (started) return;
+    started = true;
     const root = document.getElementById("content");
     if (!root) return;
-    buildContent(root);
+    const cleanupFn = mountHome(root);
+    if (global.KorgNav && global.KorgNav.setCleanup) {
+      global.KorgNav.setCleanup(cleanupFn);
+    }
   }
 
-  if (window.KorgI18n && window.KorgI18n.ready) {
-    window.KorgI18n.ready.then(start).catch(start);
-  } else {
-    document.addEventListener("i18n:ready", start, { once: true });
-    setTimeout(start, 500);
+  if (global.KorgNav) {
+    global.KorgNav.register(function (url) {
+      return global.KorgNav.isHomeUrl(url.href);
+    }, function (root) {
+      started = true;
+      return mountHome(root);
+    });
+    global.__korgHomeRegistered = true;
   }
-})();
+
+  function boot() {
+    if (!isHome()) return;
+    start();
+  }
+
+  if (global.KorgI18n && global.KorgI18n.ready) {
+    global.KorgI18n.ready.then(boot).catch(boot);
+  } else {
+    document.addEventListener("i18n:ready", boot, { once: true });
+    setTimeout(boot, 500);
+  }
+
+  global.KorgHome = { mount: mountHome, isHome: isHome };
+})(window);

@@ -6,11 +6,13 @@
     const href = options.href;
     const icon = options.icon || "🧺";
     const fromEl = options.fromEl;
-    const leavingSelector = options.leavingSelector || "main";
+    const onComplete = options.onComplete;
 
     if (!href) return;
     if (reduceMotion()) {
-      window.location.href = href;
+      if (typeof onComplete === "function") onComplete();
+      else if (global.KorgNav) global.KorgNav.navigate(href, { animate: false });
+      else window.location.href = href;
       return;
     }
 
@@ -36,8 +38,23 @@
       overlay.classList.add("is-on");
     });
 
+    let finished = false;
     const done = function () {
-      window.location.href = href;
+      if (finished) return;
+      finished = true;
+      if (typeof onComplete === "function") {
+        Promise.resolve(onComplete()).finally(function () {
+          overlay.remove();
+          document.body.classList.remove("is-leaving");
+        });
+      } else if (global.KorgNav) {
+        global.KorgNav.navigate(href, { animate: false }).finally(function () {
+          overlay.remove();
+          document.body.classList.remove("is-leaving");
+        });
+      } else {
+        window.location.href = href;
+      }
     };
     fly.addEventListener("transitionend", done, { once: true });
     setTimeout(done, 850);

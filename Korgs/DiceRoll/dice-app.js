@@ -455,7 +455,8 @@ async function doRoll() {
   }
 }
 
-function bindControls() {
+function bindControls(signal) {
+  const opts = signal ? { signal: signal } : undefined;
   $("add-bracket")?.addEventListener("click", function () {
     formula.brackets.push(
       createBracket({
@@ -467,39 +468,39 @@ function bindControls() {
     persist();
     renderBrackets();
     renderFormulaPreview();
-  });
+  }, opts);
 
   $("roll-btn")?.addEventListener("click", function () {
     doRoll();
-  });
+  }, opts);
 
   $("tpl-dnd")?.addEventListener("click", function () {
     formula = templates().dnd_attack;
     persist();
     renderBrackets();
     renderFormulaPreview();
-  });
+  }, opts);
 
   $("tpl-dnd-dmg")?.addEventListener("click", function () {
     formula = templates().dnd_damage;
     persist();
     renderBrackets();
     renderFormulaPreview();
-  });
+  }, opts);
 
   $("tpl-dh")?.addEventListener("click", function () {
     formula = templates().daggerheart;
     persist();
     renderBrackets();
     renderFormulaPreview();
-  });
+  }, opts);
 
   $("tpl-2d6")?.addEventListener("click", function () {
     formula = templates().simple_2d6;
     persist();
     renderBrackets();
     renderFormulaPreview();
-  });
+  }, opts);
 
   $("toggle-3d")?.addEventListener("change", function (e) {
     settings.use3d = !!e.target.checked;
@@ -510,19 +511,19 @@ function bindControls() {
       else stageEl.classList.add("is-hidden");
     }
     if (settings.use3d && stage) stage.resize();
-  });
+  }, opts);
 
   $("toggle-sound")?.addEventListener("change", function (e) {
     settings.sound = !!e.target.checked;
     saveSettings(settings);
     if (settings.sound) beep("ui");
-  });
+  }, opts);
 
   $("dice-color")?.addEventListener("input", function (e) {
     settings.diceColor = e.target.value;
     saveSettings(settings);
     applyDiceColor();
-  });
+  }, opts);
 
   $("share-btn")?.addEventListener("click", async function () {
     writeHash(formula);
@@ -537,12 +538,12 @@ function bindControls() {
     } catch (_) {
       flashShare(url);
     }
-  });
+  }, opts);
 
   $("clear-history")?.addEventListener("click", function () {
     clearHistory();
     renderHistory();
-  });
+  }, opts);
 
   window.addEventListener("keydown", function (e) {
     if (e.code !== "Space" && e.key !== " ") return;
@@ -551,25 +552,21 @@ function bindControls() {
       return;
     e.preventDefault();
     doRoll();
-  });
+  }, opts);
 
   const back = $("back");
   if (back) {
-    const reduceMotion =
-      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    back.addEventListener("click", function (event) {
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault();
-      if (reduceMotion) {
-        window.location.href = back.href;
-        return;
-      }
-      if (window.KorgInteraction) window.KorgInteraction.setBusy(false);
-      document.body.classList.add("is-leaving");
-      setTimeout(function () {
-        window.location.href = back.href;
-      }, 1500);
-    });
+    back.addEventListener(
+      "click",
+      function (event) {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        if (window.KorgInteraction) window.KorgInteraction.setBusy(false);
+        if (window.KorgNav) window.KorgNav.navigate(back.href);
+        else window.location.href = back.href;
+      },
+      opts
+    );
   }
 }
 
@@ -598,7 +595,17 @@ function syncSettingsUI() {
   applyDiceColor();
 }
 
-function init() {
+let activeCleanup = null;
+
+export function mount() {
+  if (activeCleanup) {
+    try { activeCleanup(); } catch (_) {}
+    activeCleanup = null;
+  }
+
+  const ac = new AbortController();
+  const signal = ac.signal;
+
   const fromHash = readHash();
   formula = fromHash || loadFormula() || createDefaultFormula();
   settings = loadSettings();
@@ -620,14 +627,14 @@ function init() {
   renderBrackets();
   renderFormulaPreview();
   renderHistory();
-  bindControls();
+  bindControls(signal);
 
-  document.addEventListener("i18n:ready", function () {
+  function onI18n() {
     renderBrackets();
     renderHistory();
-  });
+  }
+  document.addEventListener("i18n:ready", onI18n, { signal: signal });
 
-  /* Expose for debugging */
   window.DiceRollApp = {
     getFormula: function () {
       return formula;
@@ -637,10 +644,18 @@ function init() {
       return countVisualDice(formula);
     },
   };
-}
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
+  function cleanup() {
+    ac.abort();
+    if (stage && typeof stage.destroy === "function") {
+      try { stage.destroy(); } catch (_) {}
+    }
+    stage = null;
+    rolling = false;
+    if (window.KorgInteraction && window.KorgInteraction.setBusy) {
+      window.KorgInteraction.setBusy(false);
+    }
+  }
+  activeCleanup = cleanup;
+  return cleanup;
 }

@@ -305,3 +305,31 @@ footer a:hover { text-decoration: underline; }
   .expand-overlay .fly-hoop { transition: none; }
   body.is-leaving main { transition: none; }
 }
+
+/* Soft navigation content transitions */
+#content.content-leave {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+#content.content-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+#content.content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+body[data-korg-page="hoop"] main {
+  width: min(52rem, 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  #content.content-leave,
+  #content.content-enter,
+  #content.content-enter-active {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+}

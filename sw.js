@@ -1,5 +1,5 @@
 /* Korg experiments service worker — shell precache + dynamic hoop discovery. */
-const CACHE_NAME = "korg-cache-v4";
+const CACHE_NAME = "korg-cache-v5";
 const REPO = "ChrisAcrobat/korg-experiment";
 const BRANCH = "main";
 const HOOP_POLL_MS = 25000;
@@ -17,6 +17,7 @@ const CORE_PRECACHE = [
   "./js/i18n.js",
   "./js/hoops.js",
   "./js/home.js",
+  "./js/navigation.js",
   "./language-strings/en.json",
   "./language-strings/sv.json",
   "./Korgs/hoops.json",
@@ -225,9 +226,15 @@ self.addEventListener("fetch", function (event) {
   if (url.searchParams.has("korg_fp")) return;
 
   const path = url.pathname;
-  // Network-first shell assets (sw.js updates activate via skipWaiting — not a UI "critical" popup).
+  const scopePath = new URL(self.registration.scope).pathname.replace(/\/?$/, "/");
+  // Only the site shell stays network-first. Hoop HTML uses stale-while-revalidate
+  // below so soft navigation can paint instantly from Cache API.
+  const isRootShell =
+    path === scopePath ||
+    path === scopePath + "index.html" ||
+    path === scopePath.replace(/\/$/, "");
   const isShellNetworkFirst =
-    /\/(index\.html)?$/.test(path) ||
+    isRootShell ||
     path.endsWith("/reload.js") ||
     path.endsWith("/sw.js");
   // Hoop discovery files must be network-first so silent polls see new folders.

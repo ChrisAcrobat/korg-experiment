@@ -167,14 +167,19 @@
       a.addEventListener("click", function (event) {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
+        const go = function () {
+          if (global.KorgNav) return global.KorgNav.navigate(a.href, { animate: false });
+          window.location.href = a.href;
+        };
         if (global.KorgAnimations) {
           global.KorgAnimations.scaleUpNavigate({
             href: a.href,
             icon: hoop.icon || defaultIcon,
             fromEl: icon,
+            onComplete: go,
           });
         } else {
-          window.location.href = a.href;
+          go();
         }
       });
 
@@ -243,22 +248,7 @@
 
     await refresh(false);
 
-    // Silent background poll: pick up new Korgs/ folders without a manual reload.
-    setInterval(function () {
-      refresh(true);
-    }, POLL_MS);
-
-    document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible") refresh(true);
-    });
-    window.addEventListener("pageshow", function () {
-      refresh(true);
-    });
-    window.addEventListener("focus", function () {
-      refresh(true);
-    });
-
-    document.addEventListener("i18n:ready", function () {
+    function onI18nReady() {
       if (!listEl.hidden && listEl.children.length) {
         const openLabel = t("hoop_open", "Open hoop");
         listEl.querySelectorAll(".hoop").forEach(function (a) {
@@ -269,7 +259,33 @@
         const key = statusEl.getAttribute("data-i18n");
         if (key) statusEl.textContent = t(key, statusEl.textContent);
       }
-    });
+    }
+    document.addEventListener("i18n:ready", onI18nReady);
+
+    const pollId = setInterval(function () {
+      refresh(true);
+    }, POLL_MS);
+
+    function onVisibility() {
+      if (document.visibilityState === "visible") refresh(true);
+    }
+    function onPageShow() {
+      refresh(true);
+    }
+    function onFocus() {
+      refresh(true);
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("focus", onFocus);
+
+    return function cleanup() {
+      clearInterval(pollId);
+      document.removeEventListener("i18n:ready", onI18nReady);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("focus", onFocus);
+    };
   }
 
   global.KorgHoops = {

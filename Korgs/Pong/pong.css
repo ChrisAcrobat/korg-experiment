@@ -1,0 +1,78 @@
+/* Pong hoop — styles for content inside the shared shell */
+.pong-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+.pong-page .top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.pong-page a.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 0.9rem;
+}
+.pong-page a.back:hover { text-decoration: underline; }
+.pong-page h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+}
+.pong-page .heading-with-korg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.pong-page .header-basket {
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 30%, transparent));
+}
+.pong-page .score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  backdrop-filter: blur(8px);
+}
+.pong-page .stage {
+  position: relative;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  box-shadow: 0 20px 50px color-mix(in srgb, #000 25%, transparent);
+  aspect-ratio: 16 / 10;
+  touch-action: none;
+}
+.pong-page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: ns-resize;
+}
+.pong-page .hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
