@@ -35,3 +35,8 @@ Place an optional `meta.json` in each hoop folder:
 If `meta.json` is missing or incomplete, the homepage falls back to the folder name as the title, a default hoop icon, no description, and sorts that hoop last.
 
 The homepage discovers hoops by listing directories under `Korgs/` via the GitHub Contents API.
+
+## Discovery fallback
+
+The homepage lists folders via the GitHub Contents API. If that is rate-limited, it falls back to `hoops.json` (an array of folder names) and loads each hoop’s `meta.json` over HTTPS from this site.
+When you add a hoop folder, also add its name to `hoops.json`.

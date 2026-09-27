@@ -439,22 +439,47 @@
         });
       }
 
-      async function loadHoops() {
-        setStatus("hoops_loading", "Loading hoops…");
+      async function loadMetaRelative(folder) {
+        try {
+          const res = await fetch("Korgs/" + encodeURIComponent(folder) + "/meta.json", {
+            cache: "no-cache",
+          });
+          if (!res.ok) return null;
+          return res.json();
+        } catch (_) {
+          return null;
+        }
+      }
+
+      async function listFolders() {
         try {
           const entries = await fetchJson(CONTENTS);
           if (!Array.isArray(entries)) throw new Error("bad listing");
-          const dirs = entries.filter(
-            (e) => e && e.type === "dir" && e.name && !e.name.startsWith(".")
-          );
+          return entries
+            .filter((e) => e && e.type === "dir" && e.name && !e.name.startsWith("."))
+            .map((e) => e.name);
+        } catch (_) {
+          const res = await fetch("Korgs/hoops.json", { cache: "no-cache" });
+          if (!res.ok) throw new Error("hoops fallback " + res.status);
+          const data = await res.json();
+          if (!Array.isArray(data)) throw new Error("bad hoops.json");
+          return data.map(String);
+        }
+      }
+
+      async function loadHoops() {
+        setStatus("hoops_loading", "Loading hoops…");
+        try {
+          const folders = await listFolders();
           const hoops = await Promise.all(
-            dirs.map(async (dir) => {
-              const meta = await loadMeta(dir.name);
+            folders.map(async (name) => {
+              let meta = await loadMeta(name);
+              if (!meta) meta = await loadMetaRelative(name);
               const order =
                 meta && typeof meta.order === "number" ? meta.order : Number.POSITIVE_INFINITY;
               return {
-                folder: dir.name,
-                title: (meta && meta.title) || dir.name,
+                folder: name,
+                title: (meta && meta.title) || name,
                 description: (meta && meta.description) || "",
                 icon: (meta && meta.icon) || "",
                 order: order,
