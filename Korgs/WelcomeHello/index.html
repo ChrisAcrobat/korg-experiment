@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome, hello · Korg experiments</title>
+  <link rel="stylesheet" href="../../css/site.css" />
+  <style>
+    .greet {
+      margin: 1.5rem 0;
+      padding: 1.5rem 1.25rem;
+      border-radius: 1rem;
+      border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+      background: color-mix(in srgb, var(--card) 88%, transparent);
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+    a.back {
+      display: inline-flex;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    a.back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p><a class="back" href="../../">← Back home</a></p>
+    <p class="greet">Welcome, hello</p>
+  </main>
+  <script src="../../reload.js" defer></script>
+  <script src="../../js/animations.js" defer></script>
+  <script src="../../js/i18n.js" defer></script>
+</body>
+</html>
