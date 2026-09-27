@@ -1,88 +1,158 @@
+/**
+ * Thin bootstrap: register the Service Worker and watch for critical updates
+ * to index.html / reload.js. Everything else updates silently via SW / modules.
+ */
 (function () {
-  const REPO = "ChrisAcrobat/korg-experiment";
-  const BRANCH = "main";
-  const INTERVAL_MS = 30_000;
-  const ATOM =
-    "https://github.com/" + REPO + "/commits/" + encodeURIComponent(BRANCH) + ".atom";
-  const API =
-    "https://api.github.com/repos/" +
-    REPO +
-    "/commits?sha=" +
-    encodeURIComponent(BRANCH) +
-    "&per_page=1";
-
-  // Site root from this script’s URL so subpages (Korgs/Pong/) resolve correctly.
   const scriptEl = document.currentScript;
-  const siteRoot = scriptEl
-    ? new URL(".", scriptEl.src).href
-    : new URL(".", location.href).href;
+  const siteRoot = new URL(".", scriptEl.src).href;
+  const INTERVAL_MS = 45_000;
+  const FP_KEY = "korg-critical-fp-v1";
 
-  let known = null;
+  window.KORG_ROOT = siteRoot;
 
-  async function fingerprintFromAtom() {
-    const res = await fetch(ATOM, { cache: "no-store" });
-    if (!res.ok) throw new Error("atom " + res.status);
-    const text = await res.text();
-    const entry = text.match(/<entry>[\s\S]*?<id>([^<]+)<\/id>/i);
-    if (entry && entry[1]) {
-      const sha = entry[1].match(/([a-f0-9]{40})/i);
-      if (sha) return "sha:" + sha[1].toLowerCase();
-      return "atom:" + entry[1];
-    }
-    throw new Error("atom missing entry");
+  // Interaction gate used by games (e.g. Pong) to defer the update popup.
+  window.KorgInteraction = window.KorgInteraction || {
+    _busy: false,
+    setBusy: function (busy) {
+      this._busy = !!busy;
+      if (!this._busy) document.dispatchEvent(new Event("korg:interaction-idle"));
+    },
+    isBusy: function () {
+      return !!this._busy;
+    },
+  };
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register(new URL("sw.js", siteRoot).href).catch(function () {});
   }
 
-  async function fingerprintFromPages() {
-    const url = new URL("index.html", siteRoot).href + "?_=" + Date.now();
-    const res = await fetch(url, { method: "HEAD", cache: "no-store" });
-    if (!res.ok) throw new Error("pages " + res.status);
+  function t(key, fallback) {
+    return window.KorgI18n ? window.KorgI18n.t(key, fallback) : fallback;
+  }
+
+  async function fingerprint(path) {
+    const url = new URL(path, siteRoot).href + "?_=" + Date.now();
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(path + " " + res.status);
     const etag = res.headers.get("etag");
-    const modified = res.headers.get("last-modified");
-    if (etag) return "etag:" + etag;
-    if (modified) return "mod:" + modified;
-    throw new Error("pages missing validators");
-  }
-
-  async function fingerprintFromApi() {
-    const res = await fetch(API, {
-      headers: { Accept: "application/vnd.github+json" },
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("api " + res.status);
-    const data = await res.json();
-    const sha = data[0] && data[0].sha;
-    if (!sha) throw new Error("api missing sha");
-    return "sha:" + sha;
-  }
-
-  async function latestFingerprint() {
-    const errors = [];
-    for (const fn of [fingerprintFromAtom, fingerprintFromPages, fingerprintFromApi]) {
-      try {
-        return await fn();
-      } catch (err) {
-        errors.push(String(err && err.message ? err.message : err));
-      }
+    if (etag) return path + "|etag:" + etag;
+    const text = await res.text();
+    var hash = 0;
+    for (var i = 0; i < text.length; i++) {
+      hash = (hash << 5) - hash + text.charCodeAt(i);
+      hash |= 0;
     }
-    throw new Error(errors.join("; ") || "all fingerprint sources failed");
+    return path + "|h:" + hash;
   }
 
-  async function poll() {
+  async function criticalFingerprint() {
+    const parts = await Promise.all([
+      fingerprint("index.html"),
+      fingerprint("reload.js"),
+    ]);
+    return parts.join("||");
+  }
+
+  function ensureBanner() {
+    var banner = document.getElementById("update-banner");
+    if (banner) return banner;
+    banner = document.createElement("div");
+    banner.id = "update-banner";
+    banner.className = "update-banner";
+    banner.hidden = true;
+    banner.setAttribute("role", "status");
+
+    var msg = document.createElement("span");
+    msg.setAttribute("data-i18n", "update_available");
+    msg.textContent = t("update_available", "Update available");
+
+    var apply = document.createElement("button");
+    apply.type = "button";
+    apply.className = "update-apply";
+    apply.setAttribute("data-i18n", "update_reload");
+    apply.textContent = t("update_reload", "Reload");
+    apply.addEventListener("click", function () {
+      criticalFingerprint()
+        .then(function (fp) {
+          try { localStorage.setItem(FP_KEY, fp); } catch (_) {}
+          location.reload();
+        })
+        .catch(function () { location.reload(); });
+    });
+
+    var dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "update-dismiss";
+    dismiss.setAttribute("data-i18n", "update_later");
+    dismiss.textContent = t("update_later", "Later");
+    dismiss.addEventListener("click", function () {
+      banner.hidden = true;
+    });
+
+    banner.appendChild(msg);
+    banner.appendChild(apply);
+    banner.appendChild(dismiss);
+    document.body.appendChild(banner);
+    return banner;
+  }
+
+  var pendingCritical = false;
+
+  function showUpdateBanner() {
+    if (window.KorgInteraction && window.KorgInteraction.isBusy()) {
+      pendingCritical = true;
+      return;
+    }
+    var banner = ensureBanner();
+    var msg = banner.querySelector("[data-i18n='update_available']");
+    var apply = banner.querySelector(".update-apply");
+    var dismiss = banner.querySelector(".update-dismiss");
+    if (msg) msg.textContent = t("update_available", "Update available");
+    if (apply) apply.textContent = t("update_reload", "Reload");
+    if (dismiss) dismiss.textContent = t("update_later", "Later");
+    banner.hidden = false;
+    pendingCritical = false;
+  }
+
+  document.addEventListener("korg:interaction-idle", function () {
+    if (pendingCritical) showUpdateBanner();
+  });
+
+  async function checkCritical() {
     try {
-      const next = await latestFingerprint();
-      if (!next) return;
-      if (known === null) {
-        known = next;
+      const next = await criticalFingerprint();
+      var prev = null;
+      try {
+        prev = localStorage.getItem(FP_KEY);
+      } catch (_) {}
+      if (!prev) {
+        try {
+          localStorage.setItem(FP_KEY, next);
+        } catch (_) {}
         return;
       }
-      if (next !== known) {
-        location.reload();
+      if (next !== prev) {
+        // Keep storing the new fingerprint only after the user reloads,
+        // so the banner remains until they choose Reload.
+        showUpdateBanner();
       }
     } catch (_) {
-      // Ignore transient errors; try again next interval.
+      /* ignore transient errors */
     }
   }
 
-  poll();
-  setInterval(poll, INTERVAL_MS);
+  // After a successful reload onto new critical assets, refresh stored fp.
+  criticalFingerprint()
+    .then(function (fp) {
+      var banner = document.getElementById("update-banner");
+      if (!banner || banner.hidden) {
+        try {
+          localStorage.setItem(FP_KEY, fp);
+        } catch (_) {}
+      }
+    })
+    .catch(function () {});
+
+  setTimeout(checkCritical, 4000);
+  setInterval(checkCritical, INTERVAL_MS);
 })();

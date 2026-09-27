@@ -27,5 +27,8 @@
   "hoops_empty": "Inga korgar ännu. Lägg till en mapp under Korgs/.",
   "hoops_error": "Kunde inte ladda korgarna just nu. Försök igen senare.",
   "hoop_open": "Öppna korg",
-  "default_hoop_icon": "🧺"
+  "default_hoop_icon": "🧺",
+  "update_available": "Uppdatering tillgänglig",
+  "update_reload": "Ladda om",
+  "update_later": "Senare"
 }

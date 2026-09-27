@@ -194,7 +194,8 @@
   </div>
   <span class="corner-basket" aria-hidden="true">🏀</span>
   <script src="../../reload.js" defer></script>
-  <script src="../../i18n.js" defer></script>
+  <script src="../../js/animations.js" defer></script>
+  <script src="../../js/i18n.js" defer></script>
   <script defer>
     (function () {
       const canvas = document.getElementById("game");
@@ -217,6 +218,23 @@
       let pointerActive = false;
       let running = true;
       let scoreSep = " : ";
+      let idleTimer = null;
+
+      function markBusy() {
+        if (window.KorgInteraction) window.KorgInteraction.setBusy(true);
+        if (idleTimer) clearTimeout(idleTimer);
+        idleTimer = setTimeout(function () {
+          if (window.KorgInteraction) window.KorgInteraction.setBusy(false);
+        }, 12000);
+      }
+      markBusy();
+      window.addEventListener("keydown", markBusy);
+      canvas.addEventListener("pointerdown", markBusy);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden && window.KorgInteraction) {
+          window.KorgInteraction.setBusy(false);
+        }
+      });
 
       function resetBall(dir) {
         ball.x = W / 2;
@@ -376,6 +394,7 @@
           return;
         }
         running = false;
+        if (window.KorgInteraction) window.KorgInteraction.setBusy(false);
         document.body.classList.add("is-leaving");
         const go = () => { window.location.href = back.href; };
         setTimeout(go, 1500);
