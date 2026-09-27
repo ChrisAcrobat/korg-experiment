@@ -1,5 +1,5 @@
 /* Korg experiments service worker — stale-while-revalidate caching. */
-const CACHE_NAME = "korg-cache-v1";
+const CACHE_NAME = "korg-cache-v2";
 
 const PRECACHE = [
   "./",
@@ -67,6 +67,10 @@ self.addEventListener("fetch", function (event) {
     /\/(index\.html)?$/.test(path) ||
     path.endsWith("/reload.js") ||
     path.endsWith("/sw.js");
+  // Hoop discovery files must be network-first so silent polls see new folders.
+  const isHoopMeta =
+    path.endsWith("/hoops.json") ||
+    path.endsWith("/meta.json");
 
   event.respondWith(
     (async function () {
@@ -84,8 +88,8 @@ self.addEventListener("fetch", function (event) {
           return cached;
         });
 
-      // Critical shell files: network-first so update detection can see changes.
-      if (isCritical) {
+      // Critical shell + hoop listing: network-first so updates are visible without reload.
+      if (isCritical || isHoopMeta) {
         const net = await networkPromise;
         return net || cached;
       }

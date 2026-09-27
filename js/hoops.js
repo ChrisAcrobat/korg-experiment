@@ -70,7 +70,7 @@
   async function loadMetaRelative(folder) {
     try {
       const url = new URL("Korgs/" + encodeURIComponent(folder) + "/meta.json", siteRoot).href;
-      const res = await fetch(url, { cache: "no-cache" });
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return null;
       return res.json();
     } catch (_) {
@@ -90,7 +90,7 @@
           return e.name;
         });
     } catch (_) {
-      const res = await fetch(new URL("Korgs/hoops.json", siteRoot).href, { cache: "no-cache" });
+      const res = await fetch(new URL("Korgs/hoops.json", siteRoot).href, { cache: "no-store" });
       if (!res.ok) throw new Error("hoops fallback " + res.status);
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("bad hoops.json");
@@ -187,8 +187,21 @@
     }
   }
 
+  function fingerprint(hoops) {
+    if (!Array.isArray(hoops)) return "";
+    return JSON.stringify(
+      hoops.map(function (h) {
+        return [h.folder, h.title, h.description, h.icon, h.order];
+      })
+    );
+  }
+
   async function mount(listEl, statusEl) {
     if (!listEl || !statusEl) return;
+
+    let currentFp = "";
+    let refreshInFlight = false;
+    const POLL_MS = 25000;
 
     function setStatus(key, fallback) {
       statusEl.hidden = false;
@@ -198,21 +211,52 @@
       listEl.innerHTML = "";
     }
 
+    function applyHoops(hoops, isBackground) {
+      const fp = fingerprint(hoops);
+      if (fp === currentFp) return false;
+      currentFp = fp;
+      renderHoops(listEl, statusEl, hoops);
+      return true;
+    }
+
+    async function refresh(isBackground) {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
+      try {
+        const hoops = await fetchHoops();
+        applyHoops(hoops, isBackground);
+      } catch (_) {
+        if (!isBackground && !currentFp) {
+          setStatus("hoops_error", "Could not load hoops right now. Try again later.");
+        }
+      } finally {
+        refreshInFlight = false;
+      }
+    }
+
     const cached = readCache();
-    if (cached && Array.isArray(cached)) {
-      renderHoops(listEl, statusEl, cached);
+    if (cached && Array.isArray(cached) && cached.length) {
+      applyHoops(cached, false);
     } else {
       setStatus("hoops_loading", "Loading hoops…");
     }
 
-    try {
-      const hoops = await fetchHoops();
-      renderHoops(listEl, statusEl, hoops);
-    } catch (_) {
-      if (!(cached && cached.length)) {
-        setStatus("hoops_error", "Could not load hoops right now. Try again later.");
-      }
-    }
+    await refresh(false);
+
+    // Silent background poll: pick up new Korgs/ folders without a manual reload.
+    setInterval(function () {
+      refresh(true);
+    }, POLL_MS);
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") refresh(true);
+    });
+    window.addEventListener("pageshow", function () {
+      refresh(true);
+    });
+    window.addEventListener("focus", function () {
+      refresh(true);
+    });
 
     document.addEventListener("i18n:ready", function () {
       if (!listEl.hidden && listEl.children.length) {
