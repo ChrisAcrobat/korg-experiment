@@ -23,6 +23,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Generate hoop list
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          root = pathlib.Path("Korgs")
+          names = sorted(p.name for p in root.iterdir() if p.is_dir() and not p.name.startswith("."))
+          (root / "hoops.json").write_text(json.dumps(names, separators=(",", ":")) + "\n", encoding="utf-8")
+          print("hoops:", names)
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
