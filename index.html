@@ -69,32 +69,30 @@
     p:last-child { margin-bottom: 0; }
 
     .hero {
-      margin-bottom: 1.25rem;
-    }
-    .hero .eyebrow {
-      display: block;
-      margin-bottom: 0.65rem;
-    }
-    .title-row {
       display: flex;
-      align-items: center;
-      gap: 0.55rem 0.7rem;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      margin-bottom: 0.25rem;
     }
     .basket {
-      font-size: clamp(2rem, 6vw, 2.6rem);
+      font-size: clamp(3.5rem, 14vw, 5rem);
       line-height: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      translate: 0 0.06em;
-      filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--accent) 30%, transparent));
+      display: block;
+      filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 35%, transparent));
       user-select: none;
     }
-    .hero h1 {
-      margin: 0;
-      line-height: 1.1;
+    @media (min-width: 520px) {
+      .hero {
+        flex-direction: row;
+        align-items: center;
+        gap: 0;
+      }
+      .hero-text { flex: 1; min-width: 0; }
+      .basket { font-size: 4.5rem; flex-shrink: 0; }
     }
+    .hero-text h1 { margin-bottom: 0; }
+    .hero-text .eyebrow { margin-bottom: 0.4rem; }
     footer {
       margin-top: 1.75rem;
       padding-top: 1.25rem;
@@ -106,13 +104,13 @@
 </head>
 <body>
   <main>
-    <header class="hero">
-      <span class="eyebrow">AI-experiment</span>
-      <div class="title-row">
-        <span class="basket" role="img" aria-label="Korg">🧺</span>
+    <div class="hero">
+      <span class="basket" role="img" aria-label="Korg">🧺</span>
+      <div class="hero-text">
+        <span class="eyebrow">AI-experiment</span>
         <h1>Korgexperiment</h1>
       </div>
-    </header>
+    </div>
     <p>
       Det här är ett öppet experiment där en AI-assistent får bygga, publicera
       och iterera på en enkel webbplats — utan att någon skriver koden för hand.
