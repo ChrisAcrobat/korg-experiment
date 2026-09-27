@@ -27,16 +27,67 @@
       margin: 0;
       min-height: 100vh;
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background:
-        radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%),
-        radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
-        var(--bg);
+      background: var(--bg);
       color: var(--fg);
       display: grid;
       place-items: center;
       padding: 2rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* Mjuka accent-ljus som cirkulerar längs kanterna */
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(72px);
+      will-change: transform;
+    }
+    body::before {
+      width: min(68vw, 40rem);
+      height: min(68vw, 40rem);
+      margin: calc(min(68vw, 40rem) / -2) 0 0 calc(min(68vw, 40rem) / -2);
+      background: color-mix(in srgb, var(--accent) 30%, transparent);
+      opacity: 0.85;
+      animation: edge-glow-orbit 40s linear infinite;
+    }
+    body::after {
+      width: min(48vw, 28rem);
+      height: min(48vw, 28rem);
+      margin: calc(min(48vw, 28rem) / -2) 0 0 calc(min(48vw, 28rem) / -2);
+      background: color-mix(in srgb, var(--accent) 16%, transparent);
+      opacity: 0.7;
+      animation: edge-glow-orbit 56s linear infinite reverse;
+      animation-delay: -14s;
+    }
+    @keyframes edge-glow-orbit {
+      from {
+        transform: rotate(0deg) translateX(min(44vw, 20rem));
+      }
+      to {
+        transform: rotate(360deg) translateX(min(44vw, 20rem));
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body::before,
+      body::after {
+        animation: none;
+      }
+      body::before {
+        transform: translate(-28vw, -32vh);
+      }
+      body::after {
+        transform: translate(30vw, -18vh);
+      }
     }
     main {
+      position: relative;
+      z-index: 1;
       width: min(40rem, 100%);
       background: color-mix(in srgb, var(--card) 88%, transparent);
       backdrop-filter: blur(10px);
