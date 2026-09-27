@@ -115,6 +115,16 @@
       font-weight: 700;
       letter-spacing: 0.02em;
     }
+    .heading-with-korg {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .header-basket {
+      font-size: 1.35rem;
+      line-height: 1;
+      filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 30%, transparent));
+    }
     .score {
       font-variant-numeric: tabular-nums;
       font-weight: 700;
@@ -171,7 +181,10 @@
   <div class="wrap" id="wrap">
     <div class="top">
       <a class="back" id="back" href="../../" data-i18n="pong_back">← Back home</a>
-      <h1 data-i18n="pong_heading">Pong · Korg experiments</h1>
+      <div class="heading-with-korg">
+        <span class="header-basket" role="img" data-i18n="basket_aria" data-i18n-attr="aria-label">🧺</span>
+        <h1 data-i18n="pong_heading">Pong · Korg experiments</h1>
+      </div>
       <div class="score" id="score" aria-live="polite">0 : 0</div>
     </div>
     <div class="stage">
