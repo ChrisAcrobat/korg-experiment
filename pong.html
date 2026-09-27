@@ -167,20 +167,21 @@
     }
   </style>
 </head>
-<body>
+<body data-i18n-title="pong_document_title" data-i18n-meta="pong_meta_description">
   <div class="wrap" id="wrap">
     <div class="top">
-      <a class="back" id="back" href="./">← Back home</a>
-      <h1>Pong · Korg experiments</h1>
+      <a class="back" id="back" href="./" data-i18n="pong_back">← Back home</a>
+      <h1 data-i18n="pong_heading">Pong · Korg experiments</h1>
       <div class="score" id="score" aria-live="polite">0 : 0</div>
     </div>
     <div class="stage">
-      <canvas id="game" width="960" height="600" aria-label="Pong game"></canvas>
+      <canvas id="game" width="960" height="600" data-i18n="pong_canvas_label" data-i18n-attr="aria-label"></canvas>
     </div>
-    <p class="hint">You: W / S or ↑ / ↓, or drag / hold on your half. Opponent is automatic. First to whatever — just have fun.</p>
+    <p class="hint" data-i18n="pong_hint">You: W / S or ↑ / ↓, or drag / hold on your half. Opponent is automatic. First to whatever — just have fun.</p>
   </div>
   <span class="corner-basket" aria-hidden="true">🧺</span>
   <script src="reload.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script defer>
     (function () {
       const canvas = document.getElementById("game");
@@ -202,6 +203,7 @@
       let pointerY = null;
       let pointerActive = false;
       let running = true;
+      let scoreSep = " : ";
 
       function resetBall(dir) {
         ball.x = W / 2;
@@ -214,7 +216,18 @@
       }
 
       function updateScore() {
-        scoreEl.textContent = scoreP + " : " + scoreC;
+        scoreEl.textContent = scoreP + scoreSep + scoreC;
+      }
+
+      function syncI18n() {
+        if (window.KorgI18n) {
+          scoreSep = window.KorgI18n.t("score_separator", " : ");
+          updateScore();
+        }
+      }
+      document.addEventListener("i18n:ready", syncI18n);
+      if (window.KorgI18n && window.KorgI18n.ready) {
+        window.KorgI18n.ready.then(syncI18n).catch(function () {});
       }
 
       window.addEventListener("keydown", (e) => {

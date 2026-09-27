@@ -128,13 +128,13 @@
 
   </style>
 </head>
-<body>
+<body data-i18n-title="not_found_document_title">
   <main>
-    <span class="basket" role="img" aria-label="Basket">🧺</span>
-    <span class="eyebrow">Not found</span>
-    <h1>This page is not in the basket</h1>
-    <p>The address you opened does not exist on this site. Head home and try again from there.</p>
-    <a class="home" href="./">Back to home</a>
+    <span class="basket" role="img" data-i18n="basket_aria" data-i18n-attr="aria-label">🧺</span>
+    <span class="eyebrow" data-i18n="not_found_eyebrow">Not found</span>
+    <h1 data-i18n="not_found_title">This page is not in the basket</h1>
+    <p data-i18n="not_found_body">The address you opened does not exist on this site. Head home and try again from there.</p>
+    <a class="home" href="./" data-i18n="back_home">Back to home</a>
   </main>
   <!--
     The reload script must always run first.
@@ -142,5 +142,6 @@
     fetches the latest version from GitHub, and fixes the page automatically.
   -->
   <script src="reload.js" defer></script>
+  <script src="i18n.js" defer></script>
 </body>
 </html>
