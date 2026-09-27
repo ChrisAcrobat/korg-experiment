@@ -2,15 +2,23 @@
  * Thin bootstrap: register the Service Worker and watch for critical updates
  * to index.html / reload.js only. sw.js updates take over silently.
  *
- * Fingerprints use CONTENT HASH only — GitHub Pages ETags change on every
- * deploy even when file bodies are identical, which falsely triggered the
- * "update available" popup for hoop-only commits.
+ * ROOT CAUSE HISTORY
+ * ------------------
+ * 1) Preferring GitHub Pages ETags caused false "update available" popups on
+ *    every Pages deploy (ETags rotate even when file bodies are unchanged).
+ *    Fix: fingerprint CONTENT only (see criticalFingerprint).
+ * 2) Service Worker install/activate (skipWaiting + clients.claim) fires
+ *    controllerchange. The first transition is often null → controller (first
+ *    control), which is NOT a content update. This file must NEVER show the
+ *    update banner from any SW lifecycle event — only from content-hash drift
+ *    on index.html / reload.js.
  */
 (function () {
   const scriptEl = document.currentScript;
   const siteRoot = new URL(".", scriptEl.src).href;
   const INTERVAL_MS = 45_000;
-  const FP_KEY = "korg-critical-fp-v2";
+  const FP_KEY = "korg-critical-fp-v3";
+  const CONFIRM_MS = 2000;
 
   window.KORG_ROOT = siteRoot;
 
@@ -46,6 +54,7 @@
       if (!installing) return;
       installing.addEventListener("statechange", function () {
         if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          // Waiting worker ready — activate silently. Never open the banner here.
           activateWaitingWorker(reg.waiting || installing);
         }
       });
@@ -62,18 +71,35 @@
     });
   }
 
+  // Track whether we already had a controlling SW before any controllerchange.
+  // null → first controller is first claim, not an "update".
+  var hadController =
+    typeof navigator !== "undefined" &&
+    "serviceWorker" in navigator &&
+    !!navigator.serviceWorker.controller;
+
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .register(new URL("sw.js", siteRoot).href)
       .then(wireSilentServiceWorker)
       .catch(function () {});
 
-    // SW takeover is NEVER a critical update — no reload, no banner.
-    var ignoringControllerChange = true;
     navigator.serviceWorker.addEventListener("controllerchange", function () {
-      ignoringControllerChange = true;
-      /* intentionally empty: silent claim only */
+      // Defensive: SW lifecycle must never surface the critical-update UI.
+      // Even when hadController was true (SW → SW replacement), takeover stays
+      // silent — critical UX is solely content-hash of index.html / reload.js.
+      var wasFirstClaim = !hadController;
+      hadController = true;
+      // wasFirstClaim is intentionally unused beyond documenting the guard:
+      // first claim (null→controller) is ignored; replacements are also silent.
+      void wasFirstClaim;
     });
+  }
+
+  function normalizeBody(text) {
+    // Strip BOM and normalize newlines so CDN/OS variance does not false-positive.
+    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+    return String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   }
 
   function hashText(text) {
@@ -86,8 +112,8 @@
   }
 
   /**
-   * Content-only fingerprint. Do not use ETag/Last-Modified — Pages rotates
-   * those on every site publish regardless of whether this file changed.
+   * Content-only fingerprint. Never use ETag / Last-Modified / SW events.
+   * Called by checkCritical only — no short-circuit that skips the hash.
    */
   async function fingerprint(path) {
     const url = new URL(path, siteRoot).href;
@@ -96,12 +122,12 @@
       headers: { Accept: "text/html,application/javascript,text/plain,*/*" },
     });
     if (!res.ok) throw new Error(path + " " + res.status);
-    const text = await res.text();
+    const text = normalizeBody(await res.text());
     return path + "|h:" + hashText(text) + "|n:" + text.length;
   }
 
-  /** Critical = index.html + reload.js body only. Never sw.js. */
   async function criticalFingerprint() {
+    // Always hashes BOTH files; no early return before hashing.
     const parts = await Promise.all([
       fingerprint("index.html"),
       fingerprint("reload.js"),
@@ -153,6 +179,7 @@
   }
 
   var pendingCritical = false;
+  var confirmTimer = null;
 
   function showUpdateBanner() {
     if (window.KorgInteraction && window.KorgInteraction.isBusy()) {
@@ -174,6 +201,11 @@
     if (pendingCritical) showUpdateBanner();
   });
 
+  /**
+   * Only path that may show the popup. Requires a stable content-hash mismatch
+   * confirmed twice (CDN blips / mid-deploy reads must not one-shot the UI).
+   * SW controllerchange never reaches here.
+   */
   async function checkCritical() {
     try {
       const next = await criticalFingerprint();
@@ -181,20 +213,45 @@
       try {
         prev = localStorage.getItem(FP_KEY);
       } catch (_) {}
+
+      // First baseline: store and exit — never popup on first observation.
       if (!prev) {
         try {
           localStorage.setItem(FP_KEY, next);
         } catch (_) {}
         return;
       }
-      if (next !== prev) {
-        showUpdateBanner();
+
+      if (next === prev) {
+        if (confirmTimer) {
+          clearTimeout(confirmTimer);
+          confirmTimer = null;
+        }
+        return;
       }
+
+      // Mismatch: confirm with a second hash after a short delay before UI.
+      if (confirmTimer) return;
+      confirmTimer = setTimeout(function () {
+        confirmTimer = null;
+        criticalFingerprint()
+          .then(function (again) {
+            var latest = null;
+            try {
+              latest = localStorage.getItem(FP_KEY);
+            } catch (_) {}
+            if (!latest || again === latest) return;
+            if (again !== next) return; // unstable read — ignore
+            showUpdateBanner();
+          })
+          .catch(function () {});
+      }, CONFIRM_MS);
     } catch (_) {
-      /* ignore transient errors */
+      /* ignore transient errors — do not show popup */
     }
   }
 
+  // Establish baseline after load. Does not show the banner.
   criticalFingerprint()
     .then(function (fp) {
       var banner = document.getElementById("update-banner");
@@ -206,6 +263,6 @@
     })
     .catch(function () {});
 
-  setTimeout(checkCritical, 4000);
+  setTimeout(checkCritical, 5000);
   setInterval(checkCritical, INTERVAL_MS);
 })();
