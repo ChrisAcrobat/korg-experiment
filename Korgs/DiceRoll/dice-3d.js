@@ -187,7 +187,7 @@ export function createDiceStage(canvas) {
     wall(-1, 0, 7, 0);
   }
 
-  function spawnDie(spec, index, total) {
+  function spawnDie(spec, index, total, spinDir) {
     const sides = spec.sides;
     const value = spec.value;
     const isD6 = sides === 6;
@@ -210,8 +210,8 @@ export function createDiceStage(canvas) {
       mass: 1,
       shape: shape,
       allowSleep: true,
-      sleepSpeedLimit: 0.25,
-      sleepTimeLimit: 0.4,
+      sleepSpeedLimit: 0.35,
+      sleepTimeLimit: 0.35,
     });
     const cols = Math.ceil(Math.sqrt(total));
     const row = Math.floor(index / cols);
@@ -222,15 +222,21 @@ export function createDiceStage(canvas) {
       (Math.random() - 0.5) * 2.5
     );
     body.velocity.set(
-      (Math.random() - 0.5) * 4,
-      Math.random() * 2,
-      (Math.random() - 0.5) * 4
+      (Math.random() - 0.5) * 5,
+      Math.random() * 2.5,
+      (Math.random() - 0.5) * 5
     );
-    body.angularVelocity.set(
-      (Math.random() - 0.5) * 12,
-      (Math.random() - 0.5) * 12,
-      (Math.random() - 0.5) * 12
-    );
+    /* Faster spin; spinDir is +1 or -1 (CW/CCW for this roll). Primary axis randomized. */
+    const speed = 28 + Math.random() * 14;
+    const jitter = 8;
+    const axis = Math.floor(Math.random() * 3);
+    const av = [
+      (Math.random() - 0.5) * jitter,
+      (Math.random() - 0.5) * jitter,
+      (Math.random() - 0.5) * jitter,
+    ];
+    av[axis] = spinDir * speed;
+    body.angularVelocity.set(av[0], av[1], av[2]);
     world.addBody(body);
     bodies.push(body);
   }
@@ -327,8 +333,10 @@ export function createDiceStage(canvas) {
         resolve([]);
         return;
       }
+      /* One CW/CCW choice per roll, shared by all visual dice. */
+      const spinDir = Math.random() < 0.5 ? 1 : -1;
       list.forEach(function (spec, i) {
-        spawnDie(spec, i, list.length);
+        spawnDie(spec, i, list.length, spinDir);
       });
       settleFrames = 0;
       startAt = performance.now();
