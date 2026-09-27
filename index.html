@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Korgexperiment</title>
+  <title>Korg Experiments</title>
+  <meta name="description" content="Korg Experiments — an open AI website experiment." />
   <style>
     :root {
       color-scheme: light dark;
@@ -35,7 +36,6 @@
       position: relative;
       overflow-x: hidden;
     }
-    /* Soft accent lights that orbit along the edges */
     body::before,
     body::after {
       content: "";
@@ -66,24 +66,14 @@
       animation-delay: -14s;
     }
     @keyframes edge-glow-orbit {
-      from {
-        transform: rotate(0deg) translateX(min(44vw, 20rem));
-      }
-      to {
-        transform: rotate(360deg) translateX(min(44vw, 20rem));
-      }
+      from { transform: rotate(0deg) translateX(min(44vw, 20rem)); }
+      to { transform: rotate(360deg) translateX(min(44vw, 20rem)); }
     }
     @media (prefers-reduced-motion: reduce) {
       body::before,
-      body::after {
-        animation: none;
-      }
-      body::before {
-        transform: translate(-28vw, -32vh);
-      }
-      body::after {
-        transform: translate(30vw, -18vh);
-      }
+      body::after { animation: none; }
+      body::before { transform: translate(-28vw, -32vh); }
+      body::after { transform: translate(30vw, -18vh); }
     }
     main {
       position: relative;
@@ -95,6 +85,11 @@
       border-radius: 1.25rem;
       padding: 2.25rem 2rem;
       box-shadow: 0 20px 50px color-mix(in srgb, #000 25%, transparent);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    body.is-leaving main {
+      opacity: 0;
+      transform: scale(0.96);
     }
     .top-bar {
       display: flex;
@@ -158,9 +153,25 @@
     .basket {
       font-size: clamp(3.5rem, 14vw, 5rem);
       line-height: 1;
-      display: block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 35%, transparent));
       user-select: none;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      transition: transform 0.2s ease;
+    }
+    .basket:hover { transform: scale(1.06); }
+    .basket:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 6px;
+      border-radius: 0.5rem;
     }
     @media (min-width: 520px) {
       .hero {
@@ -186,6 +197,34 @@
       font-weight: 600;
     }
     footer a:hover { text-decoration: underline; }
+    .expand-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      background: transparent;
+    }
+    .expand-overlay .fly-basket {
+      position: fixed;
+      font-size: 4.5rem;
+      line-height: 1;
+      margin: 0;
+      transform-origin: center center;
+      will-change: transform, filter;
+      filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 35%, transparent));
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
+    }
+    .expand-overlay.is-on .fly-basket {
+      transform: translate(-50%, -50%) scale(18);
+      filter: drop-shadow(0 0 40px color-mix(in srgb, var(--accent) 55%, transparent));
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .expand-overlay .fly-basket { transition: none; }
+      .basket:hover { transform: none; }
+      body.is-leaving main { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -197,10 +236,10 @@
       </div>
     </div>
     <div class="hero">
-      <span class="basket" role="img" data-i18n="basketLabel" data-i18n-attr="aria-label">🧺</span>
+      <a class="basket" id="basket-link" href="pong.html" data-i18n="basketLabel" data-i18n-attr="aria-label" title="Play Pong">🧺</a>
       <div class="hero-text">
         <span class="eyebrow" data-i18n="eyebrow">AI experiment</span>
-        <h1 data-i18n="title">Korgexperiment</h1>
+        <h1 data-i18n="title">Korg Experiments</h1>
       </div>
     </div>
     <p data-i18n="intro1">
@@ -225,28 +264,28 @@
   <script defer>
     const translations = {
       en: {
-        title: "Korgexperiment",
+        title: "Korg Experiments",
         eyebrow: "AI experiment",
-        basketLabel: "Basket",
+        basketLabel: "Basket — play Pong",
         intro1: "This is an open experiment where an AI assistant gets to build, publish, and iterate on a simple website — without anyone writing the code by hand.",
         intro2: "The page is intentionally simple: a place to try workflows, publishing, and collaboration between human and assistant.",
         footerPublishedPrefix: "Published from the GitHub repository ",
         footerPublishedLink: "Korg-experiment",
         footerUpdated: "Updated: September 27, 2026.",
         langGroup: "Language",
-        documentTitle: "Korgexperiment"
+        documentTitle: "Korg Experiments"
       },
       sv: {
-        title: "Korgexperiment",
+        title: "Korg Experiments",
         eyebrow: "AI-experiment",
-        basketLabel: "Korg",
+        basketLabel: "Korg — spela Pong",
         intro1: "Det här är ett öppet experiment där en AI-assistent får bygga, publicera och iterera på en enkel webbplats — utan att någon skriver koden för hand.",
         intro2: "Sidan är medvetet enkel: en plats att prova arbetsflöden, publicering och samarbete mellan människa och assistent.",
         footerPublishedPrefix: "Publicerad från GitHub-repot ",
         footerPublishedLink: "Korg-experiment",
         footerUpdated: "Uppdaterad: 27 september 2026.",
         langGroup: "Språk",
-        documentTitle: "Korgexperiment"
+        documentTitle: "Korg Experiments"
       }
     };
 
@@ -291,6 +330,43 @@
       if (saved && translations[saved]) initial = saved;
     } catch (_) { /* ignore */ }
     setLanguage(initial);
+
+    const basket = document.getElementById("basket-link");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    basket.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      if (reduceMotion) {
+        window.location.href = basket.href;
+        return;
+      }
+
+      const rect = basket.getBoundingClientRect();
+      const overlay = document.createElement("div");
+      overlay.className = "expand-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+      const fly = document.createElement("span");
+      fly.className = "fly-basket";
+      fly.textContent = "🧺";
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      fly.style.left = cx + "px";
+      fly.style.top = cy + "px";
+      fly.style.transform = "translate(-50%, -50%) scale(1)";
+      overlay.appendChild(fly);
+      document.body.appendChild(overlay);
+      document.body.classList.add("is-leaving");
+      basket.style.visibility = "hidden";
+
+      requestAnimationFrame(() => {
+        overlay.classList.add("is-on");
+      });
+
+      const done = () => { window.location.href = basket.href; };
+      fly.addEventListener("transitionend", done, { once: true });
+      setTimeout(done, 850);
+    });
   </script>
 </body>
 </html>
