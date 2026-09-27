@@ -3,7 +3,7 @@
   "meta_description": "Korg experiments — an open AI website experiment.",
   "header_title": "Korg experiments",
   "eyebrow": "AI experiment",
-  "basket_label": "Basket — play Pong",
+  "basket_label": "Basket — open Pong",
   "basket_title": "Play Pong",
   "intro1": "This is an open experiment where an AI assistant gets to build, publish, and iterate on a simple website — without anyone writing the code by hand.",
   "intro2": "The page is intentionally simple: a place to try workflows, publishing, and collaboration between human and assistant.",
@@ -23,5 +23,6 @@
   "not_found_title": "This page is not in the basket",
   "not_found_body": "The address you opened does not exist on this site. Head home and try again from there.",
   "back_home": "Back to home",
-  "basket_aria": "Basket"
+  "basket_aria": "Basket",
+  "basket_cta": "Play Pong"
 }

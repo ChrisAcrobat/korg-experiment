@@ -3,7 +3,7 @@
   "meta_description": "Korg experiments — ett öppet AI-webbexperiment.",
   "header_title": "Korg experiments",
   "eyebrow": "AI-experiment",
-  "basket_label": "Korg — spela Pong",
+  "basket_label": "Korg — öppna Pong",
   "basket_title": "Spela Pong",
   "intro1": "Det här är ett öppet experiment där en AI-assistent får bygga, publicera och iterera på en enkel webbplats — utan att någon skriver koden för hand.",
   "intro2": "Sidan är medvetet enkel: en plats att prova arbetsflöden, publicering och samarbete mellan människa och assistent.",
@@ -23,5 +23,6 @@
   "not_found_title": "Den här sidan finns inte i korgen",
   "not_found_body": "Adressen du öppnade finns inte på den här sajten. Gå hem och försök igen därifrån.",
   "back_home": "Tillbaka till startsidan",
-  "basket_aria": "Korg"
+  "basket_aria": "Korg",
+  "basket_cta": "Spela Pong"
 }
