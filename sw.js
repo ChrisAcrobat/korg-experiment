@@ -1,10 +1,6 @@
 /* Korg experiments service worker — shell precache + dynamic hoop discovery. */
-const CACHE_NAME = "korg-cache-v5";
-const REPO = "ChrisAcrobat/korg-experiment";
-const BRANCH = "main";
+const CACHE_NAME = "korg-cache-v6";
 const HOOP_POLL_MS = 25000;
-const GH_CONTENTS =
-  "https://api.github.com/repos/" + REPO + "/contents/Korgs?ref=" + encodeURIComponent(BRANCH);
 
 /* Core shell only — never list individual hoops here (that forced critical updates). */
 const CORE_PRECACHE = [
@@ -44,57 +40,6 @@ async function cacheUrls(urls) {
   );
 }
 
-async function fetchGhJson(url) {
-  const res = await fetch(url, {
-    headers: { Accept: "application/vnd.github+json" },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error("gh " + res.status);
-  return res.json();
-}
-
-/** Recursively collect site-relative paths under a GitHub Contents API folder. */
-async function collectFromGhDir(apiUrl, sitePrefix) {
-  const entries = await fetchGhJson(apiUrl);
-  if (!Array.isArray(entries)) return [];
-  const paths = [];
-  // Directory index for GitHub Pages.
-  paths.push(sitePrefix.endsWith("/") ? sitePrefix : sitePrefix + "/");
-
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    if (!e || !e.name || e.name.indexOf(".") === 0) continue;
-    if (e.type === "dir") {
-      const childApi =
-        "https://api.github.com/repos/" +
-        REPO +
-        "/contents/" +
-        e.path +
-        "?ref=" +
-        encodeURIComponent(BRANCH);
-      const childPrefix = sitePrefix.replace(/\/?$/, "/") + e.name + "/";
-      const nested = await collectFromGhDir(childApi, childPrefix);
-      paths.push.apply(paths, nested);
-    } else if (e.type === "file") {
-      paths.push(sitePrefix.replace(/\/?$/, "/") + e.name);
-    }
-  }
-  return paths;
-}
-
-async function listFoldersFromApi() {
-  const entries = await fetchGhJson(GH_CONTENTS);
-  if (!Array.isArray(entries)) throw new Error("bad listing");
-  return entries
-    .filter(function (e) {
-      return e && e.type === "dir" && e.name && e.name.indexOf(".") !== 0;
-    })
-    .map(function (e) {
-      return e.name;
-    })
-    .sort();
-}
-
 async function listFoldersFromHoopsJson() {
   const res = await fetch(scopeUrl("./Korgs/hoops.json"), { cache: "no-store" });
   if (!res.ok) throw new Error("hoops.json " + res.status);
@@ -103,10 +48,7 @@ async function listFoldersFromHoopsJson() {
   return data.map(String).sort();
 }
 
-/**
- * When the API is rate-limited, still try to cache the common hoop entry
- * points from Pages using hoops.json (index + meta + folder URL).
- */
+/** Precache common hoop entry points from Pages using hoops.json. */
 async function precacheHoopsFallback(folders) {
   const paths = ["./Korgs/hoops.json"];
   folders.forEach(function (name) {
@@ -120,14 +62,7 @@ async function discoverAndCacheHoops(force) {
   if (discoverInFlight) return;
   discoverInFlight = true;
   try {
-    let folders;
-    let usedApi = true;
-    try {
-      folders = await listFoldersFromApi();
-    } catch (_) {
-      usedApi = false;
-      folders = await listFoldersFromHoopsJson();
-    }
+    const folders = await listFoldersFromHoopsJson();
 
     const folderKey = folders.join("|");
     if (!force && folderKey === lastFolderKey) {
@@ -137,24 +72,7 @@ async function discoverAndCacheHoops(force) {
     }
     lastFolderKey = folderKey;
 
-    if (usedApi) {
-      const allPaths = ["./Korgs/hoops.json"];
-      for (let i = 0; i < folders.length; i++) {
-        const name = folders[i];
-        const apiUrl =
-          "https://api.github.com/repos/" +
-          REPO +
-          "/contents/Korgs/" +
-          encodeURIComponent(name) +
-          "?ref=" +
-          encodeURIComponent(BRANCH);
-        const collected = await collectFromGhDir(apiUrl, "./Korgs/" + name + "/");
-        allPaths.push.apply(allPaths, collected);
-      }
-      await cacheUrls(allPaths.map(scopeUrl));
-    } else {
-      await precacheHoopsFallback(folders);
-    }
+    await precacheHoopsFallback(folders);
   } catch (_) {
     /* Discovery is best-effort; runtime SWR still fills the cache on visit. */
   } finally {
@@ -173,7 +91,7 @@ self.addEventListener("install", function (event) {
   event.waitUntil(
     (async function () {
       await cacheUrls(CORE_PRECACHE.map(scopeUrl));
-      // Discover current hoops during install (non-fatal if API is down).
+      // Discover current hoops during install (non-fatal if Pages is down).
       await discoverAndCacheHoops(true);
       await self.skipWaiting();
     })()

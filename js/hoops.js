@@ -1,14 +1,7 @@
 (function (global) {
-  const REPO = "ChrisAcrobat/korg-experiment";
-  const BRANCH = "main";
   const HOOPS_CACHE_KEY = "korg-hoops-v2";
   const scriptEl = document.currentScript;
   const siteRoot = new URL("../", scriptEl.src).href;
-  const CONTENTS =
-    "https://api.github.com/repos/" +
-    REPO +
-    "/contents/Korgs?ref=" +
-    encodeURIComponent(BRANCH);
 
   function t(key, fallback) {
     return global.KorgI18n ? global.KorgI18n.t(key, fallback) : fallback;
@@ -29,44 +22,6 @@
     } catch (_) {}
   }
 
-  async function fetchJson(url) {
-    const res = await fetch(url, {
-      headers: { Accept: "application/vnd.github+json" },
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return res.json();
-  }
-
-  function decodeBase64Utf8(b64) {
-    const bin = atob(String(b64).replace(/\n/g, ""));
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder("utf-8").decode(bytes);
-  }
-
-  async function loadMetaApi(folder) {
-    const url =
-      "https://api.github.com/repos/" +
-      REPO +
-      "/contents/Korgs/" +
-      encodeURIComponent(folder) +
-      "/meta.json?ref=" +
-      encodeURIComponent(BRANCH);
-    try {
-      const data = await fetchJson(url);
-      if (data && data.content && data.encoding === "base64") {
-        return JSON.parse(decodeBase64Utf8(data.content));
-      }
-      if (data && data.download_url) {
-        const res = await fetch(data.download_url, { cache: "no-store" });
-        if (!res.ok) throw new Error("meta " + res.status);
-        return res.json();
-      }
-    } catch (_) {}
-    return null;
-  }
-
   async function loadMetaRelative(folder) {
     try {
       const url = new URL("Korgs/" + encodeURIComponent(folder) + "/meta.json", siteRoot).href;
@@ -79,31 +34,18 @@
   }
 
   async function listFolders() {
-    try {
-      const entries = await fetchJson(CONTENTS);
-      if (!Array.isArray(entries)) throw new Error("bad listing");
-      return entries
-        .filter(function (e) {
-          return e && e.type === "dir" && e.name && e.name.indexOf(".") !== 0;
-        })
-        .map(function (e) {
-          return e.name;
-        });
-    } catch (_) {
-      const res = await fetch(new URL("Korgs/hoops.json", siteRoot).href, { cache: "no-store" });
-      if (!res.ok) throw new Error("hoops fallback " + res.status);
-      const data = await res.json();
-      if (!Array.isArray(data)) throw new Error("bad hoops.json");
-      return data.map(String);
-    }
+    const res = await fetch(new URL("Korgs/hoops.json", siteRoot).href, { cache: "no-store" });
+    if (!res.ok) throw new Error("hoops " + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("bad hoops.json");
+    return data.map(String);
   }
 
   async function fetchHoops() {
     const folders = await listFolders();
     const hoops = await Promise.all(
       folders.map(async function (name) {
-        let meta = await loadMetaApi(name);
-        if (!meta) meta = await loadMetaRelative(name);
+        const meta = await loadMetaRelative(name);
         const order =
           meta && typeof meta.order === "number" ? meta.order : Number.POSITIVE_INFINITY;
         return {
