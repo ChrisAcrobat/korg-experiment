@@ -1,7 +1,7 @@
 (function (global) {
   const REPO = "ChrisAcrobat/korg-experiment";
   const BRANCH = "main";
-  const HOOPS_CACHE_KEY = "korg-hoops-v1";
+  const HOOPS_CACHE_KEY = "korg-hoops-v2";
   const scriptEl = document.currentScript;
   const siteRoot = new URL("../", scriptEl.src).href;
   const CONTENTS =
@@ -38,6 +38,13 @@
     return res.json();
   }
 
+  function decodeBase64Utf8(b64) {
+    const bin = atob(String(b64).replace(/\n/g, ""));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
   async function loadMetaApi(folder) {
     const url =
       "https://api.github.com/repos/" +
@@ -49,7 +56,7 @@
     try {
       const data = await fetchJson(url);
       if (data && data.content && data.encoding === "base64") {
-        return JSON.parse(atob(data.content.replace(/\n/g, "")));
+        return JSON.parse(decodeBase64Utf8(data.content));
       }
       if (data && data.download_url) {
         const res = await fetch(data.download_url, { cache: "no-store" });
