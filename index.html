@@ -76,10 +76,11 @@
       margin-bottom: 0.25rem;
     }
     .basket {
-      width: min(7.5rem, 42vw);
-      height: auto;
+      font-size: clamp(3.5rem, 14vw, 5rem);
+      line-height: 1;
       display: block;
       filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 35%, transparent));
+      user-select: none;
     }
     @media (min-width: 520px) {
       .hero {
@@ -88,7 +89,7 @@
         gap: 1.25rem;
       }
       .hero-text { flex: 1; min-width: 0; }
-      .basket { width: 6.5rem; flex-shrink: 0; }
+      .basket { font-size: 4.5rem; flex-shrink: 0; }
     }
     .hero-text h1 { margin-bottom: 0; }
     .hero-text .eyebrow { margin-bottom: 0.4rem; }
@@ -104,7 +105,7 @@
 <body>
   <main>
     <div class="hero">
-      <img class="basket" src="basket.svg" width="120" height="100" alt="En flätad korg" />
+      <span class="basket" role="img" aria-label="Korg">🧺</span>
       <div class="hero-text">
         <span class="eyebrow">AI-experiment</span>
         <h1>Korgexperiment</h1>
