@@ -1,16 +1,19 @@
 /**
  * Thin bootstrap: register the Service Worker and watch for critical updates
  * to index.html / reload.js only. sw.js updates take over silently.
+ *
+ * Fingerprints use CONTENT HASH only — GitHub Pages ETags change on every
+ * deploy even when file bodies are identical, which falsely triggered the
+ * "update available" popup for hoop-only commits.
  */
 (function () {
   const scriptEl = document.currentScript;
   const siteRoot = new URL(".", scriptEl.src).href;
   const INTERVAL_MS = 45_000;
-  const FP_KEY = "korg-critical-fp-v1";
+  const FP_KEY = "korg-critical-fp-v2";
 
   window.KORG_ROOT = siteRoot;
 
-  // Interaction gate used by games (e.g. Pong) to defer the update popup.
   window.KorgInteraction = window.KorgInteraction || {
     _busy: false,
     setBusy: function (busy) {
@@ -26,7 +29,6 @@
     return window.KorgI18n ? window.KorgI18n.t(key, fallback) : fallback;
   }
 
-  /** Ask a waiting worker to activate immediately — never show the update popup. */
   function activateWaitingWorker(worker) {
     if (!worker) return;
     try {
@@ -37,21 +39,18 @@
   function wireSilentServiceWorker(reg) {
     if (!reg) return;
 
-    // A new SW may already be waiting (e.g. after a prior sw.js-only deploy).
     if (reg.waiting) activateWaitingWorker(reg.waiting);
 
     reg.addEventListener("updatefound", function () {
       const installing = reg.installing;
       if (!installing) return;
       installing.addEventListener("statechange", function () {
-        // "installed" + no controller yet = first install; with a controller = update waiting.
         if (installing.state === "installed" && navigator.serviceWorker.controller) {
           activateWaitingWorker(reg.waiting || installing);
         }
       });
     });
 
-    // Periodic update checks so sw.js changes are noticed without a full navigation.
     setInterval(function () {
       reg.update().catch(function () {});
     }, INTERVAL_MS);
@@ -69,29 +68,39 @@
       .then(wireSilentServiceWorker)
       .catch(function () {});
 
-    // New SW claimed the page — stay put; do NOT reload and do NOT show the banner.
-    // (Critical index.html / reload.js changes still use the fingerprint popup below.)
+    // SW takeover is NEVER a critical update — no reload, no banner.
+    var ignoringControllerChange = true;
     navigator.serviceWorker.addEventListener("controllerchange", function () {
-      /* silent takeover */
+      ignoringControllerChange = true;
+      /* intentionally empty: silent claim only */
     });
   }
 
-  async function fingerprint(path) {
-    const url = new URL(path, siteRoot).href + "?_=" + Date.now();
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(path + " " + res.status);
-    const etag = res.headers.get("etag");
-    if (etag) return path + "|etag:" + etag;
-    const text = await res.text();
-    var hash = 0;
+  function hashText(text) {
+    var hash = 2166136261;
     for (var i = 0; i < text.length; i++) {
-      hash = (hash << 5) - hash + text.charCodeAt(i);
-      hash |= 0;
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
     }
-    return path + "|h:" + hash;
+    return (hash >>> 0).toString(16);
   }
 
-  /** Critical = index.html + reload.js only. sw.js is intentionally excluded. */
+  /**
+   * Content-only fingerprint. Do not use ETag/Last-Modified — Pages rotates
+   * those on every site publish regardless of whether this file changed.
+   */
+  async function fingerprint(path) {
+    const url = new URL(path, siteRoot).href;
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { Accept: "text/html,application/javascript,text/plain,*/*" },
+    });
+    if (!res.ok) throw new Error(path + " " + res.status);
+    const text = await res.text();
+    return path + "|h:" + hashText(text) + "|n:" + text.length;
+  }
+
+  /** Critical = index.html + reload.js body only. Never sw.js. */
   async function criticalFingerprint() {
     const parts = await Promise.all([
       fingerprint("index.html"),
@@ -179,8 +188,6 @@
         return;
       }
       if (next !== prev) {
-        // Keep storing the new fingerprint only after the user reloads,
-        // so the banner remains until they choose Reload.
         showUpdateBanner();
       }
     } catch (_) {
@@ -188,7 +195,6 @@
     }
   }
 
-  // After a successful reload onto new critical assets, refresh stored fp.
   criticalFingerprint()
     .then(function (fp) {
       var banner = document.getElementById("update-banner");
