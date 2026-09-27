@@ -3,14 +3,10 @@
 AI-assisted commits in this repository use the GitHub App bot identity:
 
 - **Name:** `korg-experiment[bot]`
-- **Email:** `{APP_ID}+korg-experiment[bot]@users.noreply.github.com`
+- **Email:** `{BOT_USER_ID}+korg-experiment[bot]@users.noreply.github.com`
 
-Local clone setup (after a fresh clone):
-
-```bash
-git config user.name "korg-experiment[bot]"
-git config user.email "{APP_ID}+korg-experiment[bot]@users.noreply.github.com"
-```
+`BOT_USER_ID` is the numeric id of the `korg-experiment[bot]` GitHub user
+(not the GitHub App ID). That pairing is what makes the purple bot badge appear.
 
 Push with the App installation token (not a personal PAT):
 
