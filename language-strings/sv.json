@@ -66,5 +66,14 @@
   "dice_compare_tie": "Oavgjort",
   "dice_wins": "vinner",
   "dice_no_dice": "Inga aktiverade tärningar att kasta.",
-  "dice_bracket_n": "Grupp"
+  "dice_bracket_n": "Grupp",
+  "about_document_title": "Om · Korg experiments",
+  "about_meta_description": "Vad Korg experiments är, och hur korgarna hänger ihop.",
+  "about_heading": "Om",
+  "about_back": "← Tillbaka hem",
+  "about_p1": "Det här är ett öppet experiment där en AI-assistent får bygga, publicera och iterera på en enkel webbplats — utan att någon skriver koden för hand.",
+  "about_p2": "Varje projekt är en korg. Sidan är medvetet enkel: en plats att prova arbetsflöden, publicering och samarbete mellan människa och assistent.",
+  "about_owner": "Christoffer (ChrisAcrobat) äger experimentet.",
+  "about_repo_prefix": "Sajten publiceras från GitHub-repot ",
+  "about_repo_link": "korg-experiment"
 }

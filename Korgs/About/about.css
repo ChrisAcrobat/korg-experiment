@@ -1,0 +1,51 @@
+/* About hoop — styles for content inside the shared shell */
+.about-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+.about-page .top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.about-page a.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 0.9rem;
+}
+.about-page a.back:hover { text-decoration: underline; }
+.about-page h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+}
+.about-page .heading-with-korg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.about-page .header-basket {
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 30%, transparent));
+}
+.about-page a.repo {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.about-page a.repo:hover { text-decoration: underline; }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About · Korg experiments</title>
+  <meta name="description" content="What Korg experiments is, and how the hoops fit together." />
+  <link rel="stylesheet" href="../../css/site.css" />
+  <link rel="stylesheet" href="about.css" />
+</head>
+<body data-i18n-title="about_document_title" data-i18n-meta="about_meta_description" data-korg-page="hoop">
+  <main>
+    <div class="top-bar">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="sv" aria-pressed="false">SV</button>
+      </div>
+    </div>
+    <header class="hero">
+      <span class="basket" role="img" data-i18n="basket_aria" data-i18n-attr="aria-label">🧺</span>
+      <div class="hero-text">
+        <span class="eyebrow" data-i18n="eyebrow">AI experiment</span>
+        <h1 data-i18n="header_title">Korg experiments</h1>
+      </div>
+    </header>
+
+    <div id="content">
+      <div class="about-page" id="wrap">
+        <div class="top">
+          <a class="back" id="back" href="../../" data-i18n="about_back">← Back home</a>
+          <div class="heading-with-korg">
+            <span class="header-basket" role="img" aria-hidden="true">🧺</span>
+            <h1 data-i18n="about_heading">About</h1>
+          </div>
+        </div>
+        <p data-i18n="about_p1">This is an open experiment where an AI assistant gets to build, publish, and iterate on a simple website — without anyone writing the code by hand.</p>
+        <p data-i18n="about_p2">Each project is a hoop in the basket. The page stays simple on purpose: a place to try workflows, publishing, and collaboration between human and assistant.</p>
+        <p data-i18n="about_owner">Christoffer (ChrisAcrobat) owns the experiment.</p>
+        <p><span data-i18n="about_repo_prefix">The site is published from the GitHub repository </span><a class="repo" href="https://github.com/ChrisAcrobat/korg-experiment" data-i18n="about_repo_link">korg-experiment</a>.</p>
+      </div>
+    </div>
+
+    <footer>
+      <span data-i18n="footer_published_prefix">Published from the GitHub repository </span><a href="https://github.com/ChrisAcrobat/korg-experiment" data-i18n="footer_published_link">korg-experiment</a>.<br />
+      <span data-i18n="footer_updated">Updated: September 27, 2026.</span>
+    </footer>
+  </main>
+
+  <script src="../../reload.js" defer></script>
+  <script src="../../js/animations.js" defer></script>
+  <script src="../../js/i18n.js" defer></script>
+  <script src="../../js/hoops.js" defer></script>
+  <script src="../../js/navigation.js" defer></script>
+  <script src="../../js/home.js" defer></script>
+  <script type="module" src="about-app.js" data-korg-mount></script>
+</body>
+</html>

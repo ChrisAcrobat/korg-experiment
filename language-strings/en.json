@@ -66,5 +66,14 @@
   "dice_compare_tie": "Tie",
   "dice_wins": "wins",
   "dice_no_dice": "No enabled dice to roll.",
-  "dice_bracket_n": "Bracket"
+  "dice_bracket_n": "Bracket",
+  "about_document_title": "About · Korg experiments",
+  "about_meta_description": "What Korg experiments is, and how the hoops fit together.",
+  "about_heading": "About",
+  "about_back": "← Back home",
+  "about_p1": "This is an open experiment where an AI assistant gets to build, publish, and iterate on a simple website — without anyone writing the code by hand.",
+  "about_p2": "Each project is a hoop in the basket. The page stays simple on purpose: a place to try workflows, publishing, and collaboration between human and assistant.",
+  "about_owner": "Christoffer (ChrisAcrobat) owns the experiment.",
+  "about_repo_prefix": "The site is published from the GitHub repository ",
+  "about_repo_link": "korg-experiment"
 }
