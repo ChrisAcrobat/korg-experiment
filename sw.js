@@ -1,5 +1,5 @@
 /* Korg experiments service worker — shell precache + dynamic hoop discovery. */
-const CACHE_NAME = "korg-cache-v9";
+const CACHE_NAME = "korg-cache-v10";
 const HOOP_POLL_MS = 25000;
 
 /* Core shell only — never list individual hoops here (that forced critical updates). */
