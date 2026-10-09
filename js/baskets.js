@@ -1,5 +1,5 @@
 (function (global) {
-  const HOOPS_CACHE_KEY = "korg-hoops-v2";
+  const BASKETS_CACHE_KEY = "korg-baskets-v2";
   const scriptEl = document.currentScript;
   const siteRoot = new URL("../", scriptEl.src).href;
 
@@ -9,16 +9,16 @@
 
   function readCache() {
     try {
-      const raw = localStorage.getItem(HOOPS_CACHE_KEY);
+      const raw = localStorage.getItem(BASKETS_CACHE_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch (_) {
       return null;
     }
   }
 
-  function writeCache(hoops) {
+  function writeCache(baskets) {
     try {
-      localStorage.setItem(HOOPS_CACHE_KEY, JSON.stringify(hoops));
+      localStorage.setItem(BASKETS_CACHE_KEY, JSON.stringify(baskets));
     } catch (_) {}
   }
 
@@ -34,16 +34,16 @@
   }
 
   async function listFolders() {
-    const res = await fetch(new URL("Korgs/hoops.json", siteRoot).href, { cache: "no-store" });
-    if (!res.ok) throw new Error("hoops " + res.status);
+    const res = await fetch(new URL("Korgs/baskets.json", siteRoot).href, { cache: "no-store" });
+    if (!res.ok) throw new Error("baskets " + res.status);
     const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("bad hoops.json");
+    if (!Array.isArray(data)) throw new Error("bad baskets.json");
     return data.map(String);
   }
 
-  async function fetchHoops() {
+  async function fetchBaskets() {
     const folders = await listFolders();
-    const hoops = await Promise.all(
+    const baskets = await Promise.all(
       folders.map(async function (name) {
         const meta = await loadMetaRelative(name);
         const order =
@@ -57,50 +57,50 @@
         };
       })
     );
-    hoops.sort(function (a, b) {
+    baskets.sort(function (a, b) {
       if (a.order !== b.order) return a.order - b.order;
       return a.title.localeCompare(b.title);
     });
-    writeCache(hoops);
-    return hoops;
+    writeCache(baskets);
+    return baskets;
   }
 
-  function renderHoops(listEl, statusEl, hoops) {
+  function renderBaskets(listEl, statusEl, baskets) {
     listEl.innerHTML = "";
-    if (!hoops.length) {
+    if (!baskets.length) {
       statusEl.hidden = false;
-      statusEl.setAttribute("data-i18n", "hoops_empty");
-      statusEl.textContent = t("hoops_empty", "No hoops yet. Add a folder under Korgs/.");
+      statusEl.setAttribute("data-i18n", "baskets_empty");
+      statusEl.textContent = t("baskets_empty", "No baskets yet. Add a folder under Korgs/.");
       listEl.hidden = true;
       return;
     }
     statusEl.hidden = true;
     listEl.hidden = false;
-    const defaultIcon = t("default_hoop_icon", "🧺");
-    const openLabel = t("hoop_open", "Open hoop");
+    const defaultIcon = t("default_basket_icon", "🧺");
+    const openLabel = t("basket_open", "Open basket");
 
-    hoops.forEach(function (hoop) {
+    baskets.forEach(function (basket) {
       const li = document.createElement("li");
       const a = document.createElement("a");
-      a.className = "hoop";
-      a.href = new URL("Korgs/" + encodeURIComponent(hoop.folder) + "/", siteRoot).href;
-      a.setAttribute("aria-label", openLabel + ": " + hoop.title);
+      a.className = "basket";
+      a.href = new URL("Korgs/" + encodeURIComponent(basket.folder) + "/", siteRoot).href;
+      a.setAttribute("aria-label", openLabel + ": " + basket.title);
 
       const icon = document.createElement("span");
-      icon.className = "hoop-icon";
+      icon.className = "basket-icon";
       icon.setAttribute("aria-hidden", "true");
-      icon.textContent = hoop.icon || defaultIcon;
+      icon.textContent = basket.icon || defaultIcon;
 
       const text = document.createElement("div");
-      text.className = "hoop-text";
+      text.className = "basket-text";
       const title = document.createElement("p");
-      title.className = "hoop-title";
-      title.textContent = hoop.title;
+      title.className = "basket-title";
+      title.textContent = basket.title;
       text.appendChild(title);
-      if (hoop.description) {
+      if (basket.description) {
         const desc = document.createElement("p");
-        desc.className = "hoop-desc";
-        desc.textContent = hoop.description;
+        desc.className = "basket-desc";
+        desc.textContent = basket.description;
         text.appendChild(desc);
       }
 
@@ -116,7 +116,7 @@
         if (global.KorgAnimations) {
           global.KorgAnimations.scaleUpNavigate({
             href: a.href,
-            icon: hoop.icon || defaultIcon,
+            icon: basket.icon || defaultIcon,
             fromEl: icon,
             onComplete: go,
           });
@@ -130,14 +130,14 @@
     });
 
     if (global.KorgAnimations) {
-      global.KorgAnimations.applyStagger(listEl.querySelectorAll(".hoop"));
+      global.KorgAnimations.applyStagger(listEl.querySelectorAll(".basket"));
     }
   }
 
-  function fingerprint(hoops) {
-    if (!Array.isArray(hoops)) return "";
+  function fingerprint(baskets) {
+    if (!Array.isArray(baskets)) return "";
     return JSON.stringify(
-      hoops.map(function (h) {
+      baskets.map(function (h) {
         return [h.folder, h.title, h.description, h.icon, h.order];
       })
     );
@@ -158,11 +158,11 @@
       listEl.innerHTML = "";
     }
 
-    function applyHoops(hoops, isBackground) {
-      const fp = fingerprint(hoops);
+    function applyBaskets(baskets, isBackground) {
+      const fp = fingerprint(baskets);
       if (fp === currentFp) return false;
       currentFp = fp;
-      renderHoops(listEl, statusEl, hoops);
+      renderBaskets(listEl, statusEl, baskets);
       return true;
     }
 
@@ -170,11 +170,11 @@
       if (refreshInFlight) return;
       refreshInFlight = true;
       try {
-        const hoops = await fetchHoops();
-        applyHoops(hoops, isBackground);
+        const baskets = await fetchBaskets();
+        applyBaskets(baskets, isBackground);
       } catch (_) {
         if (!isBackground && !currentFp) {
-          setStatus("hoops_error", "Could not load hoops right now. Try again later.");
+          setStatus("baskets_error", "Could not load baskets right now. Try again later.");
         }
       } finally {
         refreshInFlight = false;
@@ -183,18 +183,18 @@
 
     const cached = readCache();
     if (cached && Array.isArray(cached) && cached.length) {
-      applyHoops(cached, false);
+      applyBaskets(cached, false);
     } else {
-      setStatus("hoops_loading", "Loading hoops…");
+      setStatus("baskets_loading", "Loading baskets…");
     }
 
     await refresh(false);
 
     function onI18nReady() {
       if (!listEl.hidden && listEl.children.length) {
-        const openLabel = t("hoop_open", "Open hoop");
-        listEl.querySelectorAll(".hoop").forEach(function (a) {
-          const title = a.querySelector(".hoop-title");
+        const openLabel = t("basket_open", "Open basket");
+        listEl.querySelectorAll(".basket").forEach(function (a) {
+          const title = a.querySelector(".basket-title");
           if (title) a.setAttribute("aria-label", openLabel + ": " + title.textContent);
         });
       } else if (!statusEl.hidden) {
@@ -230,9 +230,9 @@
     };
   }
 
-  global.KorgHoops = {
+  global.KorgBaskets = {
     mount: mount,
-    fetchHoops: fetchHoops,
+    fetchBaskets: fetchBaskets,
     siteRoot: siteRoot,
   };
 })(window);

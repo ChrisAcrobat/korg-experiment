@@ -80,7 +80,7 @@
     if (isHomeUrl(href)) {
       document.body.removeAttribute("data-korg-page");
     } else {
-      document.body.setAttribute("data-korg-page", "hoop");
+      document.body.setAttribute("data-korg-page", "basket");
     }
   }
 
@@ -242,8 +242,8 @@
     function (event) {
       const anchor = event.target.closest && event.target.closest("a[href]");
       if (!shouldIntercept(anchor, event)) return;
-      // Hoop cards handle their own zoom-then-navigate.
-      if (anchor.classList.contains("hoop")) return;
+      // Basket cards handle their own zoom-then-navigate.
+      if (anchor.classList.contains("basket")) return;
       event.preventDefault();
       navigate(anchor.href);
     },

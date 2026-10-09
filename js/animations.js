@@ -23,7 +23,7 @@
     overlay.className = "expand-overlay";
     overlay.setAttribute("aria-hidden", "true");
     const fly = document.createElement("span");
-    fly.className = "fly-hoop";
+    fly.className = "fly-basket";
     fly.textContent = icon;
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;

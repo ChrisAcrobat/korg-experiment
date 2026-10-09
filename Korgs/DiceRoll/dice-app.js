@@ -1,5 +1,5 @@
 /**
- * Dice Roll hoop — UI, formula builder, roll orchestration, extras.
+ * Dice Roll basket — UI, formula builder, roll orchestration, extras.
  */
 import {
   createBracket,

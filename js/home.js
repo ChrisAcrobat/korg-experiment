@@ -31,24 +31,24 @@
     );
 
     const section = document.createElement("section");
-    section.className = "hoops-section";
-    section.setAttribute("aria-labelledby", "hoops-heading");
+    section.className = "baskets-section";
+    section.setAttribute("aria-labelledby", "baskets-heading");
 
     const heading = document.createElement("h2");
-    heading.id = "hoops-heading";
-    heading.className = "hoops-heading";
-    heading.setAttribute("data-i18n", "hoops_heading");
-    heading.textContent = t("hoops_heading", "Hoops");
+    heading.id = "baskets-heading";
+    heading.className = "baskets-heading";
+    heading.setAttribute("data-i18n", "baskets_heading");
+    heading.textContent = t("baskets_heading", "Baskets");
 
     const status = document.createElement("p");
-    status.id = "hoops-status";
-    status.className = "hoops-status";
-    status.setAttribute("data-i18n", "hoops_loading");
-    status.textContent = t("hoops_loading", "Loading hoops…");
+    status.id = "baskets-status";
+    status.className = "baskets-status";
+    status.setAttribute("data-i18n", "baskets_loading");
+    status.textContent = t("baskets_loading", "Loading baskets…");
 
     const list = document.createElement("ul");
-    list.id = "hoop-list";
-    list.className = "hoop-list";
+    list.id = "basket-list";
+    list.className = "basket-list";
     list.hidden = true;
 
     section.appendChild(heading);
@@ -63,12 +63,12 @@
       global.KorgI18n.setLanguage(global.KorgI18n.getLanguage());
     }
 
-    let hoopCleanup = null;
-    if (global.KorgHoops) {
-      hoopCleanup = global.KorgHoops.mount(list, status);
+    let basketCleanup = null;
+    if (global.KorgBaskets) {
+      basketCleanup = global.KorgBaskets.mount(list, status);
     }
     return function () {
-      if (typeof hoopCleanup === "function") hoopCleanup();
+      if (typeof basketCleanup === "function") basketCleanup();
       root.innerHTML = "";
     };
   }

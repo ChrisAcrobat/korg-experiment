@@ -1,8 +1,8 @@
-/* Korg experiments service worker — shell precache + dynamic hoop discovery. */
-const CACHE_NAME = "korg-cache-v10";
-const HOOP_POLL_MS = 25000;
+/* Korg experiments service worker — shell precache + dynamic basket discovery. */
+const CACHE_NAME = "korg-cache-v11";
+const BASKET_POLL_MS = 25000;
 
-/* Core shell only — never list individual hoops here (that forced critical updates). */
+/* Core shell only — never list individual baskets here (that forced critical updates). */
 const CORE_PRECACHE = [
   "./",
   "./index.html",
@@ -11,16 +11,16 @@ const CORE_PRECACHE = [
   "./css/site.css",
   "./js/animations.js",
   "./js/i18n.js",
-  "./js/hoops.js",
+  "./js/baskets.js",
   "./js/home.js",
   "./js/navigation.js",
   "./language-strings/en.json",
   "./language-strings/sv.json",
-  "./Korgs/hoops.json",
+  "./Korgs/baskets.json",
   "./404.html",
 ];
 
-let hoopPollTimer = null;
+let basketPollTimer = null;
 let lastFolderKey = "";
 let discoverInFlight = false;
 
@@ -40,17 +40,17 @@ async function cacheUrls(urls) {
   );
 }
 
-async function listFoldersFromHoopsJson() {
-  const res = await fetch(scopeUrl("./Korgs/hoops.json"), { cache: "no-store" });
-  if (!res.ok) throw new Error("hoops.json " + res.status);
+async function listFoldersFromBasketsJson() {
+  const res = await fetch(scopeUrl("./Korgs/baskets.json"), { cache: "no-store" });
+  if (!res.ok) throw new Error("baskets.json " + res.status);
   const data = await res.json();
-  if (!Array.isArray(data)) throw new Error("bad hoops.json");
+  if (!Array.isArray(data)) throw new Error("bad baskets.json");
   return data.map(String).sort();
 }
 
-/** Precache common hoop entry points from Pages using hoops.json. */
-async function precacheHoopsFallback(folders) {
-  const paths = ["./Korgs/hoops.json"];
+/** Precache common basket entry points from Pages using baskets.json. */
+async function precacheBasketsFallback(folders) {
+  const paths = ["./Korgs/baskets.json"];
   folders.forEach(function (name) {
     const base = "./Korgs/" + encodeURIComponent(name) + "/";
     paths.push(base, base + "index.html", base + "meta.json");
@@ -58,21 +58,21 @@ async function precacheHoopsFallback(folders) {
   await cacheUrls(paths.map(scopeUrl));
 }
 
-async function discoverAndCacheHoops(force) {
+async function discoverAndCacheBaskets(force) {
   if (discoverInFlight) return;
   discoverInFlight = true;
   try {
-    const folders = await listFoldersFromHoopsJson();
+    const folders = await listFoldersFromBasketsJson();
 
     const folderKey = folders.join("|");
     if (!force && folderKey === lastFolderKey) {
-      // Same set of hoops — still refresh hoops.json / meta network-first via normal fetch.
-      await cacheUrls([scopeUrl("./Korgs/hoops.json")]);
+      // Same set of baskets — still refresh baskets.json / meta network-first via normal fetch.
+      await cacheUrls([scopeUrl("./Korgs/baskets.json")]);
       return;
     }
     lastFolderKey = folderKey;
 
-    await precacheHoopsFallback(folders);
+    await precacheBasketsFallback(folders);
   } catch (_) {
     /* Discovery is best-effort; runtime SWR still fills the cache on visit. */
   } finally {
@@ -80,19 +80,19 @@ async function discoverAndCacheHoops(force) {
   }
 }
 
-function startHoopPolling() {
-  if (hoopPollTimer) return;
-  hoopPollTimer = setInterval(function () {
-    discoverAndCacheHoops(false);
-  }, HOOP_POLL_MS);
+function startBasketPolling() {
+  if (basketPollTimer) return;
+  basketPollTimer = setInterval(function () {
+    discoverAndCacheBaskets(false);
+  }, BASKET_POLL_MS);
 }
 
 self.addEventListener("install", function (event) {
   event.waitUntil(
     (async function () {
       await cacheUrls(CORE_PRECACHE.map(scopeUrl));
-      // Discover current hoops during install (non-fatal if Pages is down).
-      await discoverAndCacheHoops(true);
+      // Discover current baskets during install (non-fatal if Pages is down).
+      await discoverAndCacheBaskets(true);
       await self.skipWaiting();
     })()
   );
@@ -108,9 +108,9 @@ self.addEventListener("activate", function (event) {
         })
       );
       await self.clients.claim();
-      // Refresh hoop set after claiming clients; then keep polling.
-      await discoverAndCacheHoops(true);
-      startHoopPolling();
+      // Refresh basket set after claiming clients; then keep polling.
+      await discoverAndCacheBaskets(true);
+      startBasketPolling();
     })()
   );
 });
@@ -123,11 +123,11 @@ self.addEventListener("message", function (event) {
     self.skipWaiting();
     return;
   }
-  if (data.type === "korg-discover-hoops") {
-    discoverAndCacheHoops(true);
+  if (data.type === "korg-discover-baskets") {
+    discoverAndCacheBaskets(true);
   }
 });
-startHoopPolling();
+startBasketPolling();
 
 self.addEventListener("fetch", function (event) {
   const req = event.request;
@@ -145,7 +145,7 @@ self.addEventListener("fetch", function (event) {
 
   const path = url.pathname;
   const scopePath = new URL(self.registration.scope).pathname.replace(/\/?$/, "/");
-  // Only the site shell stays network-first. Hoop HTML uses stale-while-revalidate
+  // Only the site shell stays network-first. Basket HTML uses stale-while-revalidate
   // below so soft navigation can paint instantly from Cache API.
   const isRootShell =
     path === scopePath ||
@@ -155,8 +155,8 @@ self.addEventListener("fetch", function (event) {
     isRootShell ||
     path.endsWith("/reload.js") ||
     path.endsWith("/sw.js");
-  // Hoop discovery files must be network-first so silent polls see new folders.
-  const isHoopMeta = path.endsWith("/hoops.json") || path.endsWith("/meta.json");
+  // Basket discovery files must be network-first so silent polls see new folders.
+  const isBasketMeta = path.endsWith("/baskets.json") || path.endsWith("/meta.json");
 
   event.respondWith(
     (async function () {
@@ -174,7 +174,7 @@ self.addEventListener("fetch", function (event) {
           return cached;
         });
 
-      if (isShellNetworkFirst || isHoopMeta) {
+      if (isShellNetworkFirst || isBasketMeta) {
         const net = await networkPromise;
         // Prefer network; only use cache if network produced nothing.
         return net || cached;

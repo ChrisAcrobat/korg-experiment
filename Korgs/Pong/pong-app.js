@@ -1,5 +1,5 @@
 /**
- * Pong hoop — mountable game for soft navigation.
+ * Pong basket — mountable game for soft navigation.
  */
 let activeCleanup = null;
 

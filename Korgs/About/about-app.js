@@ -1,5 +1,5 @@
 /**
- * About hoop — static page, mounted for soft navigation.
+ * About basket — static page, mounted for soft navigation.
  */
 let activeCleanup = null;
 
