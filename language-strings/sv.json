@@ -71,9 +71,12 @@
   "about_meta_description": "Vad Korg experiments är, och hur korgarna hänger ihop.",
   "about_heading": "Om",
   "about_back": "← Tillbaka hem",
+  "about_name": "Korg är Grok baklänges.",
   "about_p1": "Det här är ett öppet experiment där en AI-assistent får bygga, publicera och iterera på en enkel webbplats — utan att någon skriver koden för hand.",
-  "about_p2": "Varje projekt är en korg. Sidan är medvetet enkel: en plats att prova arbetsflöden, publicering och samarbete mellan människa och assistent.",
-  "about_owner": "Christoffer (ChrisAcrobat) äger experimentet.",
+  "about_p2": "Varje korg är ett projekt. Sidan är medvetet enkel: en plats att prova arbetsflöden, publicering och samarbete mellan människa och assistent.",
+  "about_owner_prefix": "Christoffer (",
+  "about_owner_link": "@ChrisAcrobat",
+  "about_owner_suffix": ") äger experimentet.",
   "about_repo_prefix": "Sajten publiceras från GitHub-repot ",
   "about_repo_link": "korg-experiment"
 }

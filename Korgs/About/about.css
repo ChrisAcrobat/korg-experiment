@@ -43,9 +43,11 @@
   line-height: 1;
   filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 30%, transparent));
 }
-.about-page a.repo {
+.about-page a.repo,
+.about-page a.person {
   color: var(--accent);
   font-weight: 600;
   text-decoration: none;
 }
-.about-page a.repo:hover { text-decoration: underline; }
+.about-page a.repo:hover,
+.about-page a.person:hover { text-decoration: underline; }
