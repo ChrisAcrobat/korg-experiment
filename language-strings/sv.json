@@ -7,7 +7,7 @@
   "intro2": "Sidan är medvetet enkel: en plats att prova arbetsflöden, publicering och samarbete mellan människa och assistent.",
   "footer_published_prefix": "Publicerad från GitHub-repot ",
   "footer_published_link": "korg-experiment",
-  "footer_updated": "Uppdaterad: 27 september 2026.",
+  "footer_updated": "Uppdaterad: {{PUBLISH_DATE}}.",
   "lang_group": "Språk",
   "pong_document_title": "Pong · Korg experiments",
   "pong_meta_description": "Ett litet Pong-spel i Korg experiments.",

@@ -7,7 +7,7 @@
   "intro2": "The page is intentionally simple: a place to try workflows, publishing, and collaboration between human and assistant.",
   "footer_published_prefix": "Published from the GitHub repository ",
   "footer_published_link": "korg-experiment",
-  "footer_updated": "Updated: September 27, 2026.",
+  "footer_updated": "Updated: {{PUBLISH_DATE}}.",
   "lang_group": "Language",
   "pong_document_title": "Pong · Korg experiments",
   "pong_meta_description": "A tiny Pong game inside Korg experiments.",

@@ -32,6 +32,39 @@ jobs:
           (root / "hoops.json").write_text(json.dumps(names, separators=(",", ":")) + "\n", encoding="utf-8")
           print("hoops:", names)
           PY
+      - name: Stamp publish date
+        run: |
+          python3 - <<'PY'
+          """Replace {{PUBLISH_DATE}} in the language files only.
+
+          index.html keeps the placeholder. Rewriting it on every deploy would
+          change its content fingerprint and show the update popup.
+          """
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          now = datetime.now(ZoneInfo("Europe/Stockholm"))
+          months_en = [
+              "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December",
+          ]
+          months_sv = [
+              "januari", "februari", "mars", "april", "maj", "juni",
+              "juli", "augusti", "september", "oktober", "november", "december",
+          ]
+          stamped = {
+              Path("language-strings/en.json"): f"{months_en[now.month - 1]} {now.day}, {now.year}",
+              Path("language-strings/sv.json"): f"{now.day} {months_sv[now.month - 1]} {now.year}",
+          }
+          token = "{{PUBLISH_DATE}}"
+          for path, formatted in stamped.items():
+              text = path.read_text(encoding="utf-8")
+              if token not in text:
+                  raise SystemExit(f"missing {token} in {path}")
+              path.write_text(text.replace(token, formatted), encoding="utf-8")
+              print(f"{path}: {formatted}")
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
